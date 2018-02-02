@@ -3,13 +3,17 @@ Motor and encoder
   Manual: https://docs.google.com/document/d/1lzThM-HnIWWYlV22_gWmxnmk7ZGK7cuQtjo3bpkG-ks/view#bookmark=id.2d5rtcckuva2
   Website: https://www.cytron.io/c-84-dc-motor/c-91-dc-geared-motor/c-405-spg30-with-encoder-spur-gear/p-spg30e-200k
 
-VNH5019
+Single MC33926
 Motor driver
+  Used to output analog current in relation to PWM signal
+  Necessary pins: (IN1, IN2) are complimentary and determine spin direction, (D1, D2) will be opposites and high D2 is high Out,
+    (EN) low or Z puts driver into sleep mode
+  Manual: https://www.nxp.com/docs/en/data-sheet/MC33926.pdf
   Website: https://www.pololu.com/product/1212
   
 DFR0250
 Power Module
-  To be used to convert from battery voltage to 3V-Batt. Volt     ie. 5V for Mega
+  Used to convert from battery voltage to 3V-Batt. Volt     ie. 5V for Mega
   Website: https://www.dfrobot.com/wiki/index.php/Power_Module_(SKU:DFR0205)#Board_Overview
   
 Lidar sensor
