@@ -7,6 +7,11 @@ VNH5019
 Motor driver
   Website: https://www.pololu.com/product/1212
   
+DFR0250
+Power Module
+  To be used to convert from battery voltage to 3V-Batt. Volt     ie. 5V for Mega
+  Website: https://www.dfrobot.com/wiki/index.php/Power_Module_(SKU:DFR0205)#Board_Overview
+  
 Lidar sensor
   Guide: http://www.instructables.com/id/Benewake-TFmini-Inexpensive-LiDAR-With-Teensy-35/
   Website: 
