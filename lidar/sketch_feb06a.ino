@@ -1,10 +1,29 @@
+//OLED Screen Setup//////////////////////////
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define OLED_RESET 4
+Adafruit_SSD1306 display(OLED_RESET);
+//////////////////////////////////////////
+
+//Ultrasonic Setup
+const int trigPin = 9;
+const int echoPin = 10;
+long duration;
+int distance;
+/////////////////////////////////////////////////
+
+//LiDAR Setup
 volatile float liDARval = 0;
 volatile float liDARvalb = 0;
 volatile float total = 0;
+/////////////////////////////////////////////////
 
 void setup() {
     Serial1.begin(115200); // HW Serial for TFmini
-    Serial.begin(115200); // Serial output through USB to computer
+    //Serial.begin(115200); // Serial output through USB to computer
     Serial2.begin(115200); //For second TFmini
     delay (100); // Give a little time for things to start
     
@@ -28,25 +47,25 @@ void setup() {
     Serial2.write(0x00);
     Serial2.write(0x01);
     Serial2.write(0x06);
-    
-    Serial.println("Message sent. Starting loop.");
+
+    ///Display setup
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    delay(2000);
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+
+
+    ///Ultrasonic setup
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    Serial.begin(9600);
 }
 
 void loop() {
-  delay(300);  // Don't want to read too often as TFmini samples at 100Hz
-  // Data Format for Benewake TFmini
-  // ===============================
-  // 9 bytes total per message:
-  // 1) 0x59
-  // 2) 0x59
-  // 3) Dist_L (low 8bit)
-  // 4) Dist_H (high 8bit)
-  // 5) Strength_L (low 8bit)
-  // 6) Strength_H (high 8bit)
-  // 7) Reserved bytes
-  // 8) Original signal quality degree
-  // 9) Checksum parity bit (low 8bit), Checksum = Byte1 + Byte2 +...+Byte8. This is only a low 8bit though
-    while(Serial1.available()>=9) // When at least 9 bytes of data available (expected number of bytes for 1 signal), then read
+  //////LiDAR Sensors////////////////////////////////////////////////////////////////////////////////////////
+  delay(100);  // Don't want to read too often as TFmini samples at 100Hz
+  while(Serial1.available()>=9) 
     {
       if((0x59 == Serial1.read()) && (0x59 == Serial1.read())) // byte 1 and byte 2
       {
@@ -62,6 +81,7 @@ void loop() {
         for(int i=0; i<3; i++)Serial1.read(); // byte 7, 8, 9 are ignored
       }
     }
+    delay(50);
     
     while(Serial2.available()>=9) // When at least 9 bytes of data available (expected number of bytes for 1 signal), then read
     {
@@ -79,18 +99,39 @@ void loop() {
         for(int i=0; i<3; i++)Serial2.read(); // byte 7, 8, 9 are ignored
       }
     }
+  //////Ultrasonic Sensors////////////////////////////////////////////////////////////////////////////////////////
+  
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration * 0.034/2;
+  
+  //////Calculations and Output////////////////////////////////////////////////////////////////////////////////////////
 
   //calculate more accurate distance
-  liDARval = liDARval * 1.164 - 2.192;
-  liDARvalb = liDARvalb * 1.164 - 2.192;
+  //liDARval = liDARval * 1.164 - 2.192;
+  //liDARvalb = liDARvalb * 1.164 - 2.192;
   
-  Serial.print(liDARval);
-  Serial.print("\t");
-  Serial.print(liDARvalb);
-  Serial.print("\tcentimeters\n");
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  //Serial.print(liDARval);
+  display.print("1) ");
+  display.print(liDARval);
+  display.print("\n");
+  //Serial.print("\t");
+  //Serial.print(liDARvalb);
+  display.print("2) ");
+  display.print(liDARvalb);
+  display.print("\n");
+  //Serial.print("\tcentimeters\n");
   total = liDARval + liDARvalb;
   
-  liDARval *= 0.0328084;
+  /**liDARval *= 0.0328084;
   Serial.print(liDARval);
   Serial.print("\t");
   liDARvalb *= 0.0328084;
@@ -103,9 +144,17 @@ void loop() {
   liDARvalb *= 12;
   Serial.print(liDARvalb);
   Serial.print("\tinches\n");
-  
-  Serial.print(total);
-  Serial.print("\ttotal centimeters\n");
-}
+  **/
+  //Serial.print(total);
+  //Serial.print("\ttotal centimeters\n");
+  display.print("Total: ");
+  display.print(total);
+  display.print("\n");
 
+  display.print("Ultrasonic: ");
+  display.print(distance);
+  display.print("\n");
+  display.display();
+  
+}
 
