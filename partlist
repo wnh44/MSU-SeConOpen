@@ -25,3 +25,4 @@ Lidar sensor
 X000ZQREBX
 IR Reciever
   Website: http://vi.vipr.ebaydesc.com/ws/eBayISAPI.dll?ViewItemDescV4&item=281010446403&t=1508557822000&tid=10&category=181880&seller=electronics_lee&excSoj=1&excTrk=1&lsite=0&ittenable=false&domain=ebay.com&descgauge=1&cspheader=1&oneClk=1&secureDesc=0
+  Guide: https://learn.adafruit.com/using-an-infrared-library/sending-ir-codes
