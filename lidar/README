@@ -1,0 +1,2 @@
+This arduno sketch will read data from two connected liDARs and one Ultrasonic sensor, then display that data on a connected OLED display
+The Pictures folder has pictures of a setup with the sensors, display, and arduino on a breadboard
