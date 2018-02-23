@@ -8,4 +8,8 @@ https://github.com/adafruit/Adafruit-GFX-Library
 Adafruit_SSD1306
 https://github.com/adafruit/Adafruit_SSD1306
 
-Just click "clone or download", unzip the file, and put that folder in your Arduino/libaraies folder (mines under my Documents, idk)
+IRLib-2
+https://github.com/cyborg5/IRLib2
+
+Just click "clone or download", unzip the file, and put that folder in your Arduino/libraries folder (mines under my Documents, idk)
+For IRLib-2 you need to download, unzip, and put all five individual folders (IRLib2, IRLibFreq, IRLibProtocols, IRLibRecv, and IRLibRecvPCI) in your Arduino/libraries folder
