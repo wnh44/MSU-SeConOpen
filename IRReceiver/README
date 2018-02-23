@@ -1,1 +1,11 @@
 This arduino sketch will generate a 3-bit random binary number (000-111), send that through a connected IR blaster, try to receive it through a connected IR receiver, and then display the value on a connected OLED display 
+
+To use the OLED display you need these libraries:
+
+Adafruit_GFX
+https://github.com/adafruit/Adafruit-GFX-Library
+
+Adafruit_SSD1306
+https://github.com/adafruit/Adafruit_SSD1306
+
+Just click "clone or download", unzip the file, and put that folder in your Arduino/libaraies folder (mines under my Documents, idk)
