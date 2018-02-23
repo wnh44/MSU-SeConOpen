@@ -1,0 +1,1 @@
+This arduino sketch will generate a 3-bit random binary number (000-111), send that through a connected IR blaster, try to receive it through a connected IR receiver, and then display the value on a connected OLED display 
