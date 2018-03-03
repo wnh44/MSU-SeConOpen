@@ -1,0 +1,13 @@
+This arduno sketch will read data from two connected liDARs and one Ultrasonic sensor, then display that data on a connected OLED display
+
+The Pictures folder has pictures of a setup with the sensors, display, and arduino on a breadboard
+
+To use the OLED display you need these libraries:
+
+Adafruit_GFX
+https://github.com/adafruit/Adafruit-GFX-Library
+
+Adafruit_SSD1306
+https://github.com/adafruit/Adafruit_SSD1306
+
+Just click "clone or download", unzip the file, and put that folder in your Arduino/libaraies folder (mines under my Documents, idk)
