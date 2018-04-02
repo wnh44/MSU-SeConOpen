@@ -1,0 +1,30 @@
+This arduino sketch should have the hierarchal structure to deal with the tasks in the competition.
+
+1: Read the IR signal in the starting area and display the code received
+2: Move to and press the correct button
+3: Recenter itself in the upper area
+4: Move down the ramp to lower area (avoiding the water lasers)
+5: Move to and press the correct pressure plate
+6: Push the treasure box a little bit
+7: Recenter itself in the lower area
+8: Move up the ramp to the upper area
+9: Move to and press the correct button to end the round
+
+How the arduino will handle these tasks:
+
+1. Simple. Use the IR receiver mounted to the bottom of the bot (which should be placed above the blaster in the setup) to read the code. Read the code twice (three times?) and if it is the same code both times, display on OLED (also simple).
+2. (maybe kinda complicated) Signal the four motors to turn the wheels to move the robot to the back wall. Sense that we are touching the wall with limit switches. Roll to the correct side of the button. The button stand should stop the robot from going off the edge of the course. Sense we have reached that with another limit switch. ??If we have touched that piece the physical thing we have on the robot should have pressed the button??
+3. Roll back toward the middle until the lidar sensors on both sides of the bot say that we are in the middle (within 3 cm). Wait a second and verify that data with the ultrasonic sensors. 
+4. Roll for a set amount of time in one direction toward the lower area of the field. Ignore any sensors. 
+5. This is too far out. Not planning this far ahead
+
+
+
+What we need to do:
+-Get control of the motors/wheels (not possible without mounts to test with I don't think)
+-Test ultrasonic and lidar to see if they are equally inaccurate in this setting
+-States
+-Move functions
+-Sensor functions
+-Interrupts???? on limit switches
+
