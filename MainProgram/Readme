@@ -20,11 +20,11 @@ How the arduino will handle these tasks:
 
 
 
-What we need to do:
+What we need to do: (+++ = Done)
 -Get control of the motors/wheels (not possible without mounts to test with I don't think)
 -Test ultrasonic and lidar to see if they are equally inaccurate in this setting
 -States
 -Move functions
--Sensor functions
++++++ Sensor functions
 -Interrupts???? on limit switches
 
