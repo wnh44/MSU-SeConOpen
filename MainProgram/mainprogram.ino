@@ -57,7 +57,6 @@ int distance;
 //LiDAR Setup////////////////////////////////////////////
 volatile float liDARval = 0;    //Initialized variables
 volatile float liDARvalb = 0;
-volatile float total = 0;
 
 //for IR input/output////////////////////////////////////
 #include "IRLibAll.h"
@@ -74,7 +73,7 @@ String displaycode = "";            //empty string for OLED display of code
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
-    Serial.begin(9600)          //Serial for IR and ultrasonic
+    Serial.begin(9600);          //Serial for IR and ultrasonic
     Serial1.begin(115200);      //HW Serial for TFmini
     Serial2.begin(115200);      //For second TFmini
     delay (2000);               //Give a little time for things to start
@@ -119,20 +118,13 @@ void setup() {
 
 void loop() {
   //////LiDAR Sensors////////////////////////////////////////////////////////////////////////////////////////
-  delay(100);               // Don't want to read too often as TFmini samples at 100Hz
+  //delay(100);               // Don't want to read too often as TFmini samples at 100Hz
 
-  LidarRead();
-    
-  //////Ultrasonic Sensors////////////////////////////////////////////////////////////////////////////////////////
-  
-  distance = UltrasonicRead();
-  
-  //////Calculations and Output////////////////////////////////////////////////////////////////////////////////////////
-  
-  DisplayLidarUltrasonic();
- 
-  //////////IR Sensor/////////////////////////////////////////////////////////////////////////////////////////////
- 
+
+  //There need to be states where it is reading certain things; it cannot read from the IR and the sensors simultaneously really
+  //LidarRead();
+  //UltrasonicRead();
+  //DisplayLidarUltrasonic();
   IRRead();                       //Calls IR Read function (defined below)
   DisplayIRCode();
   
@@ -146,8 +138,6 @@ void DisplayIRCode() {
 }
 
 int UltrasonicRead() {
- int distance = 0;
- long duration = 0;
  digitalWrite(trigPin, LOW);           //Set to low for 2 ms
  delayMicroseconds(2);
 
@@ -169,12 +159,6 @@ void DisplayLidarUltrasonic() {
 
  display.print("2) ");           //Second liDAR sensor
  display.print(liDARvalb);
- display.print("\n");
-
- total = liDARval + liDARvalb;
-
- display.print("Total: ");       //Total of both
- display.print(total);
  display.print("\n");
 
  display.print("Ultrasonic: ");  //Ultrasonic sensor
