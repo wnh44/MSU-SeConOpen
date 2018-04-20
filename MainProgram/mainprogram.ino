@@ -36,7 +36,7 @@
  * 3.3V, and VIN connected to 5V
  *
  ***********************************************************************************************/
- 
+
 
 //OLED Screen Setup//////////////////////////////////////
 #include <SPI.h>
@@ -48,11 +48,17 @@
 Adafruit_SSD1306 display(OLED_RESET);
 
 //Ultrasonic Setup///////////////////////////////////////
-const int trigPin = 9;          //Connect US trig to arduino pin 9
-const int echoPin = 10;         //Connect US echo to arduino pin 10
+const int trigPinFront = 9;          //Connect US trig to arduino pin 9
+const int echoPinFront = 10;         //Connect US echo to arduino pin 10
+const int trigPinLeft = 11;          
+const int echoPinLeft = 12;         
+const int trigPinBack = 13;         
+const int echoPinBack = 14;         
+const int trigPinRight = 15;          
+const int echoPinRight = 16;         
 
 long duration;                  //Initialized variables
-int distance;
+float distance;
 
 //LiDAR Setup////////////////////////////////////////////
 volatile float liDARval = 0;    //Initialized variables
@@ -69,8 +75,201 @@ uint32_t RcodeValue;                //32bit int for received code
 uint8_t RcodeBits;                  //8bit int for length of received code
 String displaycode = "";            //empty string for OLED display of code
 
+//Button Setup////////////////////////////////////////////
+const int buttonPin = 8;
+int buttonstate = 0;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+String IRRead(void) {
+ if (myReceiver.getResults()) {                //If the receiver reads something
+    myDecoder.decode();                         //Decode it
+    codeProtocol = myDecoder.protocolNum;       //Gets protocal (eg. NEC, UNKNOWN)
+    if (codeProtocol!=UNKNOWN) {                //As long as it didnt read some weird data
+      Serial.print(F("Received "));                 //Print "Received NEC (or sony) Value: 0b[received code in binary]
+      Serial.print(Pnames(codeProtocol));           
+      RcodeValue = myDecoder.value;                  
+      RcodeBits = myDecoder.bits;                    
+      Serial.print(F(" Value:0x"));
+      Serial.println(RcodeValue, HEX);
+
+      displaycode = String(RcodeValue, HEX);        //Makes received code a string
+      while (displaycode.length() < 3) {            //Extends the string with 0s
+        displaycode = "0" + displaycode;
+      }
+    } 
+    myReceiver.enableIRIn();                    //Re-enables IR sensor
+    return displaycode;
+  }
+  else {
+    return "null";
+  }
+}
+
+void displayText(String stringa) {
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print(stringa);
+  display.display();
+}
+
+float UltrasonicRead(String direction) {
+ if (direction == "front") {
+  trigPin = trigPinFront;
+  echoPin = echoPinFront;
+ }
+ else if (direction == "back") {
+  trigPin = trigPinBack;
+  echoPin = echoPinBack;
+ }
+ else if (direction == "left") {
+  trigPin = trigPinLeft;
+  echoPin = echoPinLeft;
+ }
+ else if (direction == "right") {
+  trigPin = trigPinRight;
+  echoPin = echoPinRight;
+ }
+ digitalWrite(trigPin, LOW);           //Set to low for 2 ms
+ delayMicroseconds(2);
+
+ digitalWrite(trigPin, HIGH);          //Set to high for 10 ms, then back to low
+ delayMicroseconds(10);
+ digitalWrite(trigPin, LOW);
+
+ duration = pulseIn(echoPin, HIGH);    //Save the duration as the length of the pulse where echopin reads high
+ distance = duration * 0.034/2;        //distance is a function of the duration
+ return distance;
+}
+
+//State Machine///////////////////////////////////////////////////////////////////////////////////
+
+typedef enum {
+  STATE_IR_READ,
+  STATE_A_BUTTON,
+  STATE_A_CENTER,
+  STATE_RAMP_DOWN,
+  STATE_B_BUTTON,
+  STATE_TREASURE,
+  STATE_B_CENTER,
+  STATE_RAMP_UP,
+  STATE_C_BUTTON
+} state_t;
+
+String state_names[] = {
+  "STATE_IR_READ - Read and display IR code",
+  "STATE_A_BUTTON - Press correct button A",
+  "STATE_A_CENTER - Center in upper area",
+  "STATE_RAMP_DOWN - Move down ramp",
+  "STATE_B_BUTTON - Press correct pressure plate B",
+  "STATE_TREASURE - Push treasure box",
+  "STATE_B_CENTER - Center in lower area",
+  "STATE_RAMP_UP - Move up ramp",
+  "STATE_C_BUTTON - Press correct button C"
+};
+
+void print_state(String e_state_string) {
+  static String e_last_state = "null";
+  if (e_state_string != e_last_state) {
+    e_last_state = e_state_string;
+    Serial.println(e_state_string);
+  }
+}
+
+void update_state(void) {
+  static state_t e_state = STATE_IR_READ;
+  static bool irreadflag = 0;
+  static int irreadnumber = 0;
+  static String irreads[] = {"null","null","null","null"};
+  static String irreadcurrent = "null";
+  
+  switch(e_state) {
+    case STATE_IR_READ:
+      irreadcurrent = IRRead();
+      if (irreadcurrent != "null") {
+        irreads[irreadnumber] = irreadcurrent;
+        irreadnumber++;
+        if (irreadnumber == 4) {
+          irreadnumber = 0;
+        }
+      }
+      /*
+      Serial.print("irreads: [");
+      for (int i = 0; i < 3; i++) {
+        Serial.print("\"");
+        Serial.print(irreads[i]);
+        Serial.print("\"");
+        Serial.print(", ");
+      }
+      Serial.print("\"");
+      Serial.print(irreads[3]);
+      Serial.print("\"]");
+      Serial.print("\n");
+      */
+      if ((irreads[0] != "null" && irreads[0] == irreads[1]) ||
+          (irreads[0] != "null" && irreads[0] == irreads[2]) ||
+          (irreads[0] != "null" && irreads[0] == irreads[3]) ||
+          (irreads[1] != "null" && irreads[1] == irreads[2]) ||
+          (irreads[1] != "null" && irreads[1] == irreads[3]) ||
+          (irreads[2] != "null" && irreads[2] == irreads[3])) {
+        irreadflag = 1;
+      }
+      if (irreadflag == 1) {
+        irreadflag = 0;
+        displayText(irreadcurrent);
+        delay(1000);
+        e_state = STATE_A_BUTTON;
+        for (int i = 0; i < 4; i++){
+          irreads[i] = "null";
+        }
+      }
+      break;
+    case STATE_A_BUTTON:
+      if (digitalRead(8) == HIGH) {
+        e_state = STATE_A_CENTER;
+      }
+      break;
+    case STATE_A_CENTER:
+      
+      if (digitalRead(8) == LOW) {
+        e_state = STATE_RAMP_DOWN;
+      }
+      break;
+    case STATE_RAMP_DOWN:
+      if (digitalRead(8) == HIGH) {
+        e_state = STATE_B_BUTTON;
+      }
+      break;
+    case STATE_B_BUTTON:
+      if (digitalRead(8) == LOW) {
+        e_state = STATE_TREASURE;
+      }
+      break;
+    case STATE_TREASURE:
+      if (digitalRead(8) == HIGH) {
+        e_state = STATE_B_CENTER;
+      }
+      break;
+    case STATE_B_CENTER:
+      if (digitalRead(8) == LOW) {
+        e_state = STATE_RAMP_UP;
+      }
+      break;
+    case STATE_RAMP_UP:
+      if (digitalRead(8) == LOW) {
+        e_state = STATE_C_BUTTON;
+      }
+      break;
+    case STATE_C_BUTTON:
+      if (digitalRead(8) == HIGH) {
+        e_state = STATE_IR_READ;
+      }
+      break;
+    default:
+      e_state = STATE_IR_READ;
+  }
+  print_state(state_names[e_state]);
+  displayText(state_names[e_state]);
+}
 
 void setup() {
     Serial.begin(9600);          //Serial for IR and ultrasonic
@@ -113,7 +312,8 @@ void setup() {
     
     //IR Receiver Setup
     myReceiver.enableIRIn();                                //Enable receiver
- 
+
+    pinMode(buttonPin, INPUT_PULLUP);
 }
 
 void loop() {
@@ -125,9 +325,11 @@ void loop() {
   //LidarRead();
   //UltrasonicRead();
   //DisplayLidarUltrasonic();
-  IRRead();                       //Calls IR Read function (defined below)
-  DisplayIRCode();
-  
+  //IRRead();                       //Calls IR Read function (defined below)
+  //DisplayIRCode();
+  update_state();
+  delay(200);
+
 }
 
 void DisplayIRCode() {
@@ -135,18 +337,6 @@ void DisplayIRCode() {
  display.setCursor(0, 0);
  display.print(displaycode);
  display.display();
-}
-
-int UltrasonicRead() {
- digitalWrite(trigPin, LOW);           //Set to low for 2 ms
- delayMicroseconds(2);
-
- digitalWrite(trigPin, HIGH);          //Set to high for 10 ms, then back to low
- delayMicroseconds(10);
- digitalWrite(trigPin, LOW);
-
- duration = pulseIn(echoPin, HIGH);    //Save the duration as the length of the pulse where echopin reads high
- distance = duration * 0.034/2;        //distance is a function of the duration
 }
 
 void DisplayLidarUltrasonic() {
@@ -203,26 +393,5 @@ void LidarRead() {
       t2b += t1b;
       for(int i=0; i<3; i++)Serial2.read(); // byte 7, 8, 9 are ignored
     }
-  }
-}
-
-void IRRead() {
- if (myReceiver.getResults()) {                //If the receiver reads something
-    myDecoder.decode();                         //Decode it
-    codeProtocol = myDecoder.protocolNum;       //Gets protocal (eg. NEC, UNKNOWN)
-    if (codeProtocol!=UNKNOWN) {                //As long as it didnt read some weird data
-      Serial.print(F("Received "));                 //Print "Received NEC (or sony) Value: 0b[received code in binary]
-      Serial.print(Pnames(codeProtocol));           
-      RcodeValue = myDecoder.value;                  
-      RcodeBits = myDecoder.bits;                    
-      Serial.print(F(" Value:0b"));
-      Serial.println(RcodeValue, BIN);
-
-      displaycode = String(RcodeValue, BIN);        //Makes received code a string
-      while (displaycode.length() < 3) {            //Extends the string with 0s
-        displaycode = "0" + displaycode;
-      }
-    } 
-    myReceiver.enableIRIn();                    //Re-enables IR sensor
   }
 }
