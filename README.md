@@ -6,12 +6,21 @@ Meeting times are 12:30 Tuesdays and 10:30 Fridays
 
 # The Team:
 Spencer Barnes: Hardware Team Lead
+
 Will Herrington: Software Team Lead
+
 Patrick Bell
+
 Jake Gyllenhall
+
 Adrianna Spencer
+
 Brooke Clark
+
 Liam Neeson
+
 Jadwin Manual
+
 Kumar Zjaveri
+
 Sarah McDonalds
