@@ -5,11 +5,11 @@ Our meeting room is the robotics lab, Simrall 427 (fourth floor, right in the co
 Meeting times are 12:30 Tuesdays and 10:30 Fridays
 
 # The Team:
-Spencer Barnes: Hardware Team Lead
+Spencer Barney: Hardware Team Lead
 
-Will Herrington: Software Team Lead
+Will Harrison: Software Team Lead
 
-Patrick Bell
+Patrick Belt
 
 Jake Gyllenhall
 
