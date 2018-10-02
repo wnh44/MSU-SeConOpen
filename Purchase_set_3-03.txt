@@ -1,4 +1,0 @@
-Motor brackets(4):            https://www.robotshop.com/en/dc-geared-motor-bracket-spg30-spg50.html
-Toolkit(1):                   https://www.amazon.com/Screwdriver-Toolkit-JACKYLED-Disassembly-Electronic-Appliances/dp/B01EMLCYVU/ref=sr_1_4?ie=UTF8&qid=1520031048&sr=8-4&keywords=Electronic+toolkit
-3 cell Battery(1):            https://www.amazon.com/Battery-Helicopter-Quadcopter-3S3000-30-EC3-EFLB30003S30/dp/B013TKC910/ref=sr_1_7?ie=UTF8&qid=1520032015&sr=8-7&keywords=3+cell+lipo+battery
-Limit switches(pack of 10):   https://www.amazon.com/TEMCo-Micro-Switch-Roller-Action/dp/B0163B6PY4/ref=sr_1_13?ie=UTF8&qid=1520022510&sr=8-13&keywords=limit+switch+roller+lever
