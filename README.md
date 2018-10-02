@@ -1,5 +1,17 @@
-# MSUSECONOpen17-
+# Mississippi State University IEEE Southeast Conference Open Team 2018-2019
 
-Our meeting room is Simrall 302 (third floor, all the way at the end of the longer hall across from the staircase, it has a nice glass sign on the door)
+Our meeting room is the robotics lab, Simrall 427 (fourth floor, right in the corner of the hallway)
 
-Meeting times are 3:30 Mondays, 3:00 Wednesdays, and 2:00 Fridays
+Meeting times are 12:30 Tuesdays and 10:30 Fridays
+
+# The Team:
+Spencer Barnes: Hardware Team Lead
+Will Herrington: Software Team Lead
+Patrick Bell
+Jake Gyllenhall
+Adrianna Spencer
+Brooke Clark
+Liam Neeson
+Jadwin Manual
+Kumar Zjaveri
+Sarah McDonalds
