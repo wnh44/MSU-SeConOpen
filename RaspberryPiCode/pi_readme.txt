@@ -16,4 +16,5 @@ Secon Pi
 
 	Get Latest Address: https://pbell97.pythonanywhere.com/piIP/
 	Setup Serial: https://maker.pro/raspberry-pi/tutorial/how-to-connect-and-interface-raspberry-pi-with-arduino
-	Startup Script:https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/
+	Startup Script: https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/
+	Setup Arduino IDE: http://razzpisampler.oreilly.com/ch10.html
