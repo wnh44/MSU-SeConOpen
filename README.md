@@ -1,4 +1,4 @@
-# Wowow Mississippi State University IEEE Southeast Conference Open Team 2018-2019
+# Mississippi State University IEEE Southeast Conference Open Team 2018-2019
 
 Our meeting room is the robotics lab, Simrall 427 (fourth floor, right in the corner of the hallway)
 
