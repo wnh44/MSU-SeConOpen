@@ -8,6 +8,9 @@ class motorController {
     // Sets up 2 or 4 motors
     void setupTwoWheels();
     void setupFourWheels();
+    int numberOfWheels;
+
+    Adafruit_DCMotor activeMotors[4];
 
     public:
     Adafruit_MotorShield motorShield;
@@ -27,10 +30,9 @@ class motorController {
 
     motorController(int shieldAddress, int numberOfWheels);
     void changeSpeed(Adafruit_DCMotor *motor, int speed);   // Should change speed of all motors instead of one motor?
+    void changeSpeed(int speed);
 
-    void goForward();
     void goForward(int speed);
-    void goBackward();
     void goBackward(int speed);
 
     // Setup enum for types of turns
