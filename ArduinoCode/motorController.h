@@ -10,7 +10,7 @@ class motorController {
     void setupFourWheels();
     int numberOfWheels;
 
-    Adafruit_DCMotor activeMotors[4];
+    Adafruit_DCMotor *activeMotors[4];
 
     public:
     Adafruit_MotorShield motorShield;
@@ -41,5 +41,5 @@ class motorController {
     void turnLeft(int method);
 
     void stop();
-}
+};
 
