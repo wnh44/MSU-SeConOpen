@@ -13,6 +13,13 @@ class motorController {
     Adafruit_DCMotor *activeMotors[4];
 
     public:
+    // Must be lowercase to avoid conflict with motor libary enum
+    typedef enum turnMethod {
+        twist,
+        forward,
+        backward
+    };
+
     Adafruit_MotorShield motorShield;
 
     // 4 Wheel setup
@@ -37,8 +44,8 @@ class motorController {
 
     // Setup enum for types of turns
 
-    void turnRight(int method);
-    void turnLeft(int method);
+    void turnRight(int method, int speed);
+    void turnLeft(int method, int speed);
 
     void stop();
 };

@@ -117,8 +117,91 @@ void motorController::goBackward(int speed){
     }
 }
 
+// Turns right
+void motorController::turnRight(int method, int speed){
+    if (numberOfWheels == 2){
+        switch (method){
+            case twist:
+                changeSpeed(speed);
+                activeMotors[0]->run(FORWARD);
+                activeMotors[1]->run(BACKWARD);
+                break;
+            case forward:
+                changeSpeed(speed);
+                activeMotors[0]->run(FORWARD);
+                activeMotors[1]->run(RELEASE);
+                break;
+            case backward:
+                changeSpeed(speed);
+                activeMotors[0]->run(RELEASE);
+                activeMotors[1]->run(BACKWARD);
+                break;
+        }
+    }
 
-//void changeMotorDirection(enum)
+    if (numberOfWheels == 4){
+        switch (method){
+            case twist:
 
-// Have a 2 motor setup and a 4 motor setup, have the constructor take either 2 or 4, 
-// then have the 2motorSetup and 4motorSetup be private functions called by that
+                break;
+            case forward:
+
+                break;
+            case backward:
+
+                break;
+        }
+    }
+
+}
+
+// Turns left
+void motorController::turnLeft(int method, int speed){
+    if (numberOfWheels == 2){
+        switch (method){
+            case twist:
+                changeSpeed(speed);
+                activeMotors[0]->run(BACKWARD);
+                activeMotors[1]->run(FORWARD);
+                break;
+            case forward:
+                changeSpeed(speed);
+                activeMotors[0]->run(RELEASE);
+                activeMotors[1]->run(FORWARD);
+                break;
+            case backward:
+                changeSpeed(speed);
+                activeMotors[0]->run(BACKWARD);
+                activeMotors[1]->run(RELEASE);
+                break;
+        }
+    }
+
+    if (numberOfWheels == 4){
+        switch (method){
+            case twist:
+
+                break;
+            case forward:
+
+                break;
+            case backward:
+
+                break;
+        }
+    }
+
+}
+
+
+
+// Stops all motors
+void motorController::stop(){
+    for (int i = 0; i < numberOfWheels; i++){
+        changeSpeed(activeMotors[i], 0);
+        activeMotors[i]->run(RELEASE);
+    }
+}
+
+
+
