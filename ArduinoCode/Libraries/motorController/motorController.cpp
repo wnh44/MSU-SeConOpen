@@ -21,8 +21,8 @@ motorController::motorController(int shieldAddress, int numberOfWheels){
         this->numberOfWheels = 4;
     }
 
-    // ADD input validation with error handling
-    //Serial.println("Finished Constructor");
+    // This makes it work sometimes?
+    Serial.print("");
 }
 
 // Sets up just 2 motors
