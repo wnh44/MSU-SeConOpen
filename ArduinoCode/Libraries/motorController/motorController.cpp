@@ -4,6 +4,7 @@
 
 using namespace std;
 
+
 // Constructor
 motorController::motorController(int shieldAddress, int numberOfWheels){
     // Initiates the motorshield
@@ -21,6 +22,7 @@ motorController::motorController(int shieldAddress, int numberOfWheels){
     }
 
     // ADD input validation with error handling
+    //Serial.println("Finished Constructor");
 }
 
 // Sets up just 2 motors
@@ -119,45 +121,27 @@ void motorController::goBackward(int speed){
 
 // Turns right
 void motorController::turnRight(int method, int speed){
-    if (numberOfWheels == 2){
-        switch (method){
-            case twist:
-                changeSpeed(speed);
-                activeMotors[0]->run(FORWARD);
-                activeMotors[1]->run(BACKWARD);
-                break;
-            case forward:
-                changeSpeed(speed);
-                activeMotors[0]->run(FORWARD);
-                activeMotors[1]->run(RELEASE);
-                break;
-            case backward:
-                changeSpeed(speed);
-                activeMotors[0]->run(RELEASE);
-                activeMotors[1]->run(BACKWARD);
-                break;
-        }
+    switch (method){
+        case twist:
+            changeSpeed(speed);
+            activeMotors[0]->run(FORWARD);
+            activeMotors[1]->run(BACKWARD);
+            break;
+        case forward:
+            changeSpeed(speed);
+            activeMotors[0]->run(FORWARD);
+            activeMotors[1]->run(RELEASE);
+            break;
+        case backward:
+            changeSpeed(speed);
+            activeMotors[0]->run(RELEASE);
+            activeMotors[1]->run(BACKWARD);
+            break;
     }
-
-    if (numberOfWheels == 4){
-        switch (method){
-            case twist:
-
-                break;
-            case forward:
-
-                break;
-            case backward:
-
-                break;
-        }
-    }
-
 }
 
 // Turns left
 void motorController::turnLeft(int method, int speed){
-    if (numberOfWheels == 2){
         switch (method){
             case twist:
                 changeSpeed(speed);
@@ -175,22 +159,6 @@ void motorController::turnLeft(int method, int speed){
                 activeMotors[1]->run(RELEASE);
                 break;
         }
-    }
-
-    if (numberOfWheels == 4){
-        switch (method){
-            case twist:
-
-                break;
-            case forward:
-
-                break;
-            case backward:
-
-                break;
-        }
-    }
-
 }
 
 

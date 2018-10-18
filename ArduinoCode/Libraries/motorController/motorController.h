@@ -3,6 +3,12 @@
 
 // Maybe make a class for a motor, then have this motor controller just call that class??
 
+typedef enum turnMethod {
+   twist,
+   forward,
+   backward
+};
+
 class motorController {
     private:
     // Sets up 2 or 4 motors
@@ -13,12 +19,6 @@ class motorController {
     Adafruit_DCMotor *activeMotors[4];
 
     public:
-    // Must be lowercase to avoid conflict with motor libary enum
-    typedef enum turnMethod {
-        twist,
-        forward,
-        backward
-    };
 
     Adafruit_MotorShield motorShield;
 
