@@ -1,7 +1,7 @@
-#include "sensors.h"
+#include "AllSensors.h"
 using namespace std;
 
-sensors::sensors(bool liDAR1, bool liDAR2, int trigPin, int echoPin) {
+AllSensors::AllSensors(bool liDAR1, bool liDAR2, int trigPin, int echoPin) {
     this->trigPin = trigPin;
     this->echoPin = echoPin;
     if (liDAR1) {
@@ -15,7 +15,7 @@ sensors::sensors(bool liDAR1, bool liDAR2, int trigPin, int echoPin) {
     }
 }
 
-void sensors::setupUltraSonic() {
+void AllSensors::setupUltraSonic() {
     if (this->trigPin == 0 || this->echoPin == 0) {
         Serial.println("Cannot setup UltraSonic Sensor with given pins");
     }
@@ -25,7 +25,7 @@ void sensors::setupUltraSonic() {
     Serial.begin(9600);
 }
 
-void sensors::setupliDAR1() {
+void AllSensors::setupliDAR1() {
     Serial1.begin(115200);      // HW Serial for TFmini
     delay(100);
     // Set to Standard Output mode
@@ -39,7 +39,7 @@ void sensors::setupliDAR1() {
     Serial1.write(0x06);
 }
 
-void sensors::setupliDAR2() {
+void AllSensors::setupliDAR2() {
     Serial2.begin(115200);      // HW Serial for TFmini
     delay(100);
     // Set to Standard Output mode
@@ -53,7 +53,7 @@ void sensors::setupliDAR2() {
     Serial2.write(0x06);
 }
 
-float sensors::scanliDAR() {
+float AllSensors::scanliDAR() {
     float liDARval = 0;
     while(Serial1.available()>=9)
     {
@@ -74,7 +74,7 @@ float sensors::scanliDAR() {
     return liDARval;
 }
 
-float sensors::scanUltraSonic() {
+float AllSensors::scanUltraSonic() {
     long duration;
     float distance = 0;
     digitalWrite(this->trigPin, LOW);           //Set to low for 2 ms
