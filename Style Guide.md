@@ -1,6 +1,6 @@
 # Open SeCon Style Guide
 ###### Authors: Spencer Barnes, Jake Griesmer
-###### Updated: 10/25/2018
+###### Updated: 10/26/2018
 
 
 This style guide will cover various conventions that will be used for the Mississippi 
@@ -18,7 +18,8 @@ decisions made while writing the code. This is done using effective naming and c
 also in organizing the code to improve readability. 
 
 Lines of code should be shorter than 70 characters and should never exceed 120 characters. There
-should be fewer than 8 consecutive lines of code and should never exceed 15 lines.
+should be fewer than 8 consecutive lines of code without a comment and/or white space 
+and should never exceed 15 lines.
 
 ___
 ## Order of Code
@@ -43,16 +44,17 @@ ___
 ## Commenting
 Comments should be used to describe code in logical chunks. They may be used on a more individual
 basis or inline with more complicated or convoluted lines. Comments should be simple complete 
-phrases that are typically not whole sentences.
+phrases that are typically not whole sentences. Use comments to logically connect each line of code
+in a way that's readable.
 
 #### Descriptive Comments
 These are the comments used to describe code purpose and functionality. Each line should have at
 least one descriptive comment to give it context. Descriptive comments should begin with an 
-uppercase letter, and multi-line comments should having a hanging indent.
+uppercase letter, and multi-line comments should having a hanging indent (using tabs).
 
 ```c++
 // Run through the linked list, stop when the item's found
-//	here is example of multi lined comment
+//    here is example of multi lined comment
 ```
 
 #### Debugging Comments
@@ -76,19 +78,19 @@ The comment block header should contain the **name of the file**, the **authors*
 creation**, the **date of most recent update**, and a **description** of the contents.
 
 ```c++
-/********************************************************************
-* Name:
-* 
-* Authors:
-* Creation Date:
-* Update Date:
-* 
-* Decription:
-********************************************************************/
+//------------------------------------------------------------------
+// Name:
+//
+// Authors:
+// Creation Date:
+// Update Date:
+//
+// Decription:
+//------------------------------------------------------------------
 ```
 or
 ```python
-#####################################################################
+# ------------------------------------------------------------------
 # Name:
 # 
 # Authors:
@@ -96,7 +98,7 @@ or
 # Update Date:
 # 
 # Description:
-#####################################################################
+# ------------------------------------------------------------------
 ```
 
 ___
@@ -136,10 +138,12 @@ immediately follow, and parameters should have a space on either side. On defini
 will open inline with the declaration and close in column with the declaration. As follows:
 
 ```c++
+
 // Author: Spencer Barnes
 // params: double array - list of grades to be averaged
-//	   int - length of array
+//	       int - length of array
 // return: double - average of array
+
 double getAverage( double* adGrades, int iLength ) {
     double dAvg = 0;
     for( int i = 0; i < iLength; i++ ) {
@@ -147,6 +151,7 @@ double getAverage( double* adGrades, int iLength ) {
     }
     return dAvg / iLength;
 }
+
 ```
 ```c++
 dTestAvg = getAverage( adTestGrades, iTestGradesLength );
