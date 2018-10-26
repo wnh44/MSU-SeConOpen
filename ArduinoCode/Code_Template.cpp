@@ -40,7 +40,7 @@ int var_1;                  // Explain variables next to their declaration
 // Functions
 // ___________________________________
 
-int function_1(par_1) {     // Explain the function's purpose 
+int function_1(int par_1) {     // Explain the function's purpose 
                             // and what parameters are what
     
     // Step 1
