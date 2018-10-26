@@ -123,11 +123,6 @@ All **constants** must be `CAPITALIZED_WITH_UNDERSCORES`.
 
 All **globals** must be prefixed with 'g\_' as `g_xUpperCamelCase`.
 
-#### Class Attributes
-**Non-private attributes** associated with individual object instances must be prefixed with 
-'m\_' as `m_xUpperCamelCase`, while **private attributes** should be prefixed with '\_' as 
-`_xUpperCamelCase`. **Class attributes** must be preceded by 'c\_' as `c_xUpperCamelCase`.
-
 ___
 ## Functions and Methods
 Functions and methods must be preceded by comments stating the **primary contributor**, the 
@@ -161,3 +156,94 @@ ___
 ## Classes
 Must be named using `UpperCamelCase`. They follow the same brace rules as methods. For python,
 a description of the class's attributes should commented at the top of the class.
+
+#### Class Attributes
+**Non-private attributes** associated with individual object instances must be prefixed with 
+'m\_' as `m_xUpperCamelCase`, while **private attributes** should be prefixed with '\_' as 
+`_xUpperCamelCase`. **Class attributes** must be preceded by 'c\_' as `c_xUpperCamelCase`.
+
+
+```
+c++
+
+class DataObject {
+    int _iPrivateAttribute;
+    int m_iNonPrivateAttribute;
+    
+    void classFunction (int,int);
+}
+
+```
+___
+## Style Guide Reference
+
+Variables:  Upper Camel Case, prefixed with lowercase letter(s) indicating type
+Constants:  All Upper Case
+Globals:    Prefixed with "g_"
+Functions:  Lower Camel Case
+Classes:    Upper Camel Case
+Pub Att:    Prefixed with "m_"
+Pri Att:    Prefixed with "_"
+    
+    
+___
+## Sample Program
+Shown below is a program implementing the style guidelines listed above (classes would be in a header
+file so they are not shown.
+
+```
+c++
+
+//------------------------------------------------------------------
+// Name: Sample Program
+//
+// Authors: Jake Griesmer
+// Creation Date: 10/26/2018
+// Update Date: 10/26/2018
+//
+// Decription: A sample program for future reference
+//------------------------------------------------------------------
+
+// Variables and Constants
+
+int iSampleInteger = 5;
+double adSampleValues[] = {90.1, 90.2, 90.3};
+double* pdSampleValues = &adSampleValues[0];
+ClassName uSampleClassAttribute = ClassName ( adSampleValues );
+bool bJakeIsCool = true;
+dResult = 0;
+
+const int iCONSTANT_INTEGER;
+global const int g_iCONSTANT_INTEGER;
+
+
+// Functions
+
+// Author: Jake Griesmer
+// params: double array - list of values to be averaged
+//	       int - length of the double array
+// return: double - average of the double array
+
+double getAverage( double* adValuesToAvg, int iLength ) {
+    double dAvg = 0;
+    for( int i = 0; i < iLength; i++ ) {
+        dAvg += adValyesToAvg[i];
+    }
+    return dAvg / iLength;
+}
+
+
+// Main Loop
+
+main() {
+
+dResult = getAverage( pdSampleValues, 3 );
+
+// DEBUG jtg410
+print ( dResult );
+// DEBUG
+
+return;
+
+}
+```
