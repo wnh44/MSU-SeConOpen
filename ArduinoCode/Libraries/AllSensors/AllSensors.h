@@ -11,20 +11,25 @@
 #include "Adafruit_TCS34725.h"
 
 class AllSensors {
-    private:
+private:
     void setupliDAR1();
     void setupliDAR2();
-    void setupUltraSonic();
-    int trigPin;
-    int echoPin;
+    void setupUltraSonic1();
+    void setupUltraSonic2();
+    int trigPin1;
+    int echoPin1;
+    int trigPin2;
+    int echoPin2;
     Adafruit_TCS34725 tcs;
     void setupColorSensor();
 
-    public:
+public:
 
-    AllSensors(bool liDAR1, bool liDAR2, int trigPin, int echoPin, bool colorSensor);
-    float scanliDAR();
-    float scanUltraSonic();
+    AllSensors(bool liDAR1, bool liDAR2, int trigPin1, int echoPin1, int trigPin2, int echoPin2, bool colorSensor);
+    float scanliDAR1();
+    float scanliDAR2();
+    float scanUltraSonic1();
+    float scanUltraSonic2();
     String getHexColor();
     String getObstacleColor();
     float *getRGBColorArray();

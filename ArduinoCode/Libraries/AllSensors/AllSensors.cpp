@@ -1,17 +1,22 @@
 #include "AllSensors.h"
 using namespace std;
 
-AllSensors::AllSensors(bool liDAR1, bool liDAR2, int trigPin, int echoPin, bool colorSensor) {
-    this->trigPin = trigPin;
-    this->echoPin = echoPin;
+AllSensors::AllSensors(bool liDAR1, bool liDAR2, int trigPin1, int echoPin1, int trigPin2, int echoPin2, bool colorSensor) {
+    this->trigPin1 = trigPin1;
+    this->echoPin1 = echoPin1;
+    this->trigPin2 = trigPin2;
+    this->echoPin2 = echoPin2;
     if (liDAR1) {
         setupliDAR1();
     }
     if (liDAR2) {
         setupliDAR2();
     }
-    if (trigPin != 0 && echoPin != 0) {
-        setupUltraSonic();
+    if (trigPin1 != 0 && echoPin1 != 0) {
+        setupUltraSonic1();
+    }
+    if (trigPin2 != 0 && echoPin2 != 0) {
+        setupUltraSonic2();
     }
     if (colorSensor) {
         setupColorSensor();
@@ -107,13 +112,23 @@ float *AllSensors::getRGBColorArray() {
     return colorArray;
 }
 
-void AllSensors::setupUltraSonic() {
-    if (this->trigPin == 0 || this->echoPin == 0) {
-        Serial.println("Cannot setup UltraSonic Sensor with given pins");
+void AllSensors::setupUltraSonic1() {
+    if (this->trigPin1 == 0 || this->echoPin1 == 0) {
+        Serial.println("Cannot setup UltraSonic Sensor 1 with given pins");
     }
     //Ultrasonic setup
-    pinMode(this->trigPin, OUTPUT);
-    pinMode(this->echoPin, INPUT);
+    pinMode(this->trigPin1, OUTPUT);
+    pinMode(this->echoPin1, INPUT);
+    Serial.begin(9600);
+}
+
+void AllSensors::setupUltraSonic2() {
+    if (this->trigPin2 == 0 || this->echoPin2 == 0) {
+        Serial.println("Cannot setup UltraSonic Sensor 2 with given pins");
+    }
+    //Ultrasonic setup
+    pinMode(this->trigPin2, OUTPUT);
+    pinMode(this->echoPin2, INPUT);
     Serial.begin(9600);
 }
 
@@ -145,7 +160,7 @@ void AllSensors::setupliDAR2() {
     Serial2.write(0x06);
 }
 
-float AllSensors::scanliDAR() {
+float AllSensors::scanliDAR1() {
     float liDARval = 0;
     while(Serial1.available()>=9)
     {
@@ -166,17 +181,53 @@ float AllSensors::scanliDAR() {
     return liDARval;
 }
 
-float AllSensors::scanUltraSonic() {
+float AllSensors::scanliDAR2() {
+    float liDARval = 0;
+    while(Serial2.available()>=9)
+    {
+        if((0x59 == Serial2.read()) && (0x59 == Serial2.read())) // byte 1 and byte 2
+        {
+            unsigned int t1 = Serial2.read(); // byte 3 = Dist_L
+            unsigned int t2 = Serial2.read(); // byte 4 = Dist_H
+            t2 <<= 8;
+            t2 += t1;
+            liDARval = t2;
+            t1 = Serial2.read(); // byte 5 = Strength_L
+            t2 = Serial2.read(); // byte 6 = Strength_H
+            t2 <<= 8;
+            t2 += t1;
+            for(int i=0; i<3; i++)Serial2.read(); // byte 7, 8, 9 are ignored
+        }
+    }
+    return liDARval;
+}
+
+float AllSensors::scanUltraSonic1() {
     long duration;
     float distance = 0;
-    digitalWrite(this->trigPin, LOW);           //Set to low for 2 ms
+    digitalWrite(this->trigPin1, LOW);           //Set to low for 2 ms
     delayMicroseconds(2);
 
-    digitalWrite(this->trigPin, HIGH);          //Set to high for 10 ms, then back to low
+    digitalWrite(this->trigPin1, HIGH);          //Set to high for 10 ms, then back to low
     delayMicroseconds(10);
-    digitalWrite(this->trigPin, LOW);
+    digitalWrite(this->trigPin1, LOW);
 
-    duration = pulseIn(this->echoPin, HIGH);    //Save the duration as the length of the pulse where echopin reads high
+    duration = pulseIn(this->echoPin1, HIGH);    //Save the duration as the length of the pulse where echopin reads high
+    distance = duration * 0.034/2;        //distance is a function of the duration
+    return distance;
+}
+
+float AllSensors::scanUltraSonic2() {
+    long duration;
+    float distance = 0;
+    digitalWrite(this->trigPin2, LOW);           //Set to low for 2 ms
+    delayMicroseconds(2);
+
+    digitalWrite(this->trigPin2, HIGH);          //Set to high for 10 ms, then back to low
+    delayMicroseconds(10);
+    digitalWrite(this->trigPin2, LOW);
+
+    duration = pulseIn(this->echoPin2, HIGH);    //Save the duration as the length of the pulse where echopin reads high
     distance = duration * 0.034/2;        //distance is a function of the duration
     return distance;
 }
