@@ -566,7 +566,7 @@ void update_state(void) {
             else {
                 Move_Stop();
 
-                //moves to where ultrasonic sensors should read button posts
+                //moves to where ultrasonic AllSensors should read button posts
                 Move_Forward(255);
                 delay(1000);
                 Move_Stop();
@@ -636,7 +636,7 @@ void update_state(void) {
         //pressent second button, B
         case STATE_B_BUTTON:
 
-            //this stuff tries to use sensors to get there, I did not have time
+            //this stuff tries to use AllSensors to get there, I did not have time
             /*
               if ((UltrasonicRead("front") - bbuttondistance) > bmargin) {
                 Move_Forward(255);
