@@ -121,6 +121,7 @@ void motorController::goBackward(int speed){
 
 // Turns right
 void motorController::turnRight(int method, int speed){
+    stop();
     switch (method){
         case twist:
             changeSpeed(speed);
@@ -142,23 +143,24 @@ void motorController::turnRight(int method, int speed){
 
 // Turns left
 void motorController::turnLeft(int method, int speed){
-        switch (method){
-            case twist:
-                changeSpeed(speed);
-                activeMotors[0]->run(BACKWARD);
-                activeMotors[1]->run(FORWARD);
-                break;
-            case forward:
-                changeSpeed(speed);
-                activeMotors[0]->run(RELEASE);
-                activeMotors[1]->run(FORWARD);
-                break;
-            case backward:
-                changeSpeed(speed);
-                activeMotors[0]->run(BACKWARD);
-                activeMotors[1]->run(RELEASE);
-                break;
-        }
+    stop();
+    switch (method){
+        case twist:
+            changeSpeed(speed);
+            activeMotors[0]->run(BACKWARD);
+            activeMotors[1]->run(FORWARD);
+            break;
+        case forward:
+            changeSpeed(speed);
+            activeMotors[0]->run(RELEASE);
+            activeMotors[1]->run(FORWARD);
+            break;
+        case backward:
+            changeSpeed(speed);
+            activeMotors[0]->run(BACKWARD);
+            activeMotors[1]->run(RELEASE);
+            break;
+    }
 }
 
 
