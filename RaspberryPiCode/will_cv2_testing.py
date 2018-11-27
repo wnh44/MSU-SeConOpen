@@ -2,9 +2,12 @@
 #
 # https://pythonprogramming.net/loading-images-python-opencv-tutorial/
 
+from __future__ import print_function
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import argparse
+import time
 
 
 #---------THRESHOLDING AND PASTING LOGO-------
@@ -102,19 +105,38 @@ def captureblur():
 #--------MORPHOLOGICAL TRANSFORM-------------------
 def morph():
     cap = cv2.VideoCapture(0)
+    counter = 0
 
     while(1):
         _, frame = cap.read()
+        if counter == 0:
+            img_name = "opencv_frame_{}.png".format(0)
+            cv2.imwrite(img_name, frame)
+            counter += 1
+        cv2.circle(frame, (100, 63), 30, (0, 0, 255), -1)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         lower_red = np.array([30, 150, 50])
         upper_red = np.array([255, 255, 180])
-        mask = cv2.inRange(hsv, lower_red, upper_red)
-        res = cv2.bitwise_and(frame, frame, mask=mask)
+        # lower_red = np.array([13, 127, 153])
+        # upper_red = np.array([328, 255, 180])
+        lower_yellow = np.array([30, 150, 50])
+        upper_yellow = np.array([255, 255, 180])
+        lower_blue = np.array([30, 150, 50])
+        upper_blue = np.array([255, 255, 180])
+        lower_green = np.array([30, 150, 50])
+        upper_green = np.array([255, 255, 180])
 
-        kernel = np.ones((5,5),np.uint8)
+        redmask = cv2.inRange(hsv, lower_red, upper_red)
+        yellowmask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        bluemask = cv2.inRange(hsv, lower_blue, upper_blue)
+        greenmask = cv2.inRange(hsv, lower_green, upper_green)
 
-        erosion = cv2.erode(mask, kernel, iterations = 1)
-        dilation = cv2.dilate(mask, kernel, iterations = 1)
+        # res = cv2.bitwise_and(frame, frame, mask=mask)
+
+        # kernel = np.ones((5,5),np.uint8)
+
+        # erosion = cv2.erode(mask, kernel, iterations = 1)
+        # dilation = cv2.dilate(mask, kernel, iterations = 1)
         # opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         # closing = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         # tophat = cv2.morphologyEx(mask, cv2.MORPH_TOPHAT, kernel)
@@ -122,10 +144,13 @@ def morph():
 
 
 
-        cv2.imshow('original', frame)
-        cv2.imshow('mask', mask)
-        cv2.imshow('erosion', erosion)
-        cv2.imshow('dilation', dilation)
+        cv2.imshow('hsv', hsv)
+        cv2.imshow('redmask', redmask)
+        # cv2.imshow('yellowmask', yellowmask)
+        # cv2.imshow('bluemask', bluemask)
+        # cv2.imshow('greenmask', greenmask)
+        # cv2.imshow('erosion', erosion)
+        # cv2.imshow('dilation', dilation)
         # cv2.imshow('opening', opening)
         # cv2.imshow('closing', closing)
         # cv2.imshow('tophat', tophat)
@@ -217,3 +242,118 @@ def foregroundextract():
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
+#------CORNER DETECTION--------------------
+
+# All this stuff is for the range sliders and stuff///////////////////////////////////////////
+max_value = 255
+max_value_h = 360 // 2
+low_h = 0
+low_s = 0
+low_v = 0
+high_h = max_value_h
+high_s = max_value
+high_v = max_value
+capture = 'Video Capture'
+detect = 'Object Detection'
+low_h_name = 'Low H'
+low_s_name = 'Low S'
+low_v_name = 'Low V'
+high_h_name = 'High H'
+high_s_name = 'High S'
+high_v_name = 'High V'
+
+def on_low_h_thresh_trackbar(val):
+    global low_h
+    global high_h
+    low_h = val
+    low_h = min(high_h-1, low_h)
+    cv2.setTrackbarPos(low_h_name, detect, low_h)
+
+def on_high_h_thresh_trackbar(val):
+    global low_h
+    global high_h
+    high_h = val
+    high_h = max(high_h, low_h+1)
+    cv2.setTrackbarPos(high_h_name, detect, high_h)
+
+def on_low_s_thresh_trackbar(val):
+    global low_s
+    global high_s
+    low_s = val
+    low_s = min(high_s-1, low_s)
+    cv2.setTrackbarPos(low_s_name, detect, low_s)
+
+def on_high_s_thresh_trackbar(val):
+    global low_s
+    global high_s
+    high_s = val
+    high_s = max(high_s, low_s+1)
+    cv2.setTrackbarPos(high_s_name, detect, high_s)
+
+def on_low_v_thresh_trackbar(val):
+    global low_v
+    global high_v
+    low_v = val
+    low_v = min(high_v-1, low_v)
+    cv2.setTrackbarPos(low_v_name, detect, low_v)
+
+def on_high_v_thresh_trackbar(val):
+    global low_v
+    global high_v
+    high_v = val
+    high_v = max(high_v, low_v+1)
+    cv2.setTrackbarPos(high_v_name, detect, high_v)
+
+parser = argparse.ArgumentParser(description='Code for Thresholding Operations using inRange tutorial.')
+parser.add_argument('--camera', help='Camera divide number.', default=0, type=int)
+args = parser.parse_args()
+
+cap = cv2.VideoCapture(0)
+
+cv2.namedWindow(capture)
+cv2.namedWindow(detect)
+
+cv2.createTrackbar(low_h_name, detect, low_h, max_value_h, on_low_h_thresh_trackbar)
+cv2.createTrackbar(high_h_name, detect, high_h, max_value_h, on_high_h_thresh_trackbar)
+cv2.createTrackbar(low_s_name, detect, low_s, max_value, on_low_s_thresh_trackbar)
+cv2.createTrackbar(high_s_name, detect, high_s, max_value, on_high_s_thresh_trackbar)
+cv2.createTrackbar(low_v_name, detect, low_v, max_value, on_low_v_thresh_trackbar)
+cv2.createTrackbar(high_v_name, detect, high_v, max_value, on_high_v_thresh_trackbar)
+
+
+while True:
+
+    ret, frame = cap.read()
+    frame = cv2.resize(frame, (600, 500))
+    if frame is None:
+        break
+    frame_HSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # frame_threshold = cv2.inRange(frame_HSV, (low_h, low_s, low_v), (high_h, high_s, high_v))
+
+    # I tested with the frame threshold to get these ranges for the colors
+    blue = cv2.inRange(frame_HSV, (105, 190, 0), (120,255,180))
+    green = cv2.inRange(frame_HSV, (50, 95, 60), (85,255,180))
+    yellow = cv2.inRange(frame_HSV, (10, 85, 0), (45,255,180))
+
+    # Since the red ball and the red paint are on different ends of the hue spectrum
+    # I had to add the two masks for those ranges
+    redball = cv2.inRange(frame_HSV, (0, 130, 0), (10,255,180))
+    redeverything = cv2.inRange(frame_HSV, (130, 160, 0), (180, 255, 255))
+    red = cv2.add(redball, redeverything)
+
+    cv2.imshow(capture, frame)
+    # cv2.imshow('hsv', frame_HSV)
+    # cv2.imshow(detect, frame_threshold)
+    cv2.imshow('blue', blue)
+    cv2.imshow('green', green)
+    # cv2.imshow('redball', redball)
+    # cv2.imshow('redeverything', redeverything)
+    cv2.imshow('red', red)
+    cv2.imshow('yellow', yellow)
+
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cv2.destroyAllWindows()
+cap.release()
