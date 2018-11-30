@@ -64,22 +64,59 @@ String AllSensors::getHexColor() {
 String AllSensors::getObstacleColor() {
     // Gets hex string and converts to hex
     String hexColor = getHexColor();
-    unsigned long red = strtoul(hexColor.substring(0,2).c_str(), NULL, 16);
-    unsigned long green = strtoul(hexColor.substring(2,4).c_str(), NULL, 16);
-    unsigned long blue = strtoul(hexColor.substring(4,6).c_str(), NULL, 16);
+//    unsigned long red = strtoul(hexColor.substring(0,2).c_str(), NULL, 16);
+//    unsigned long green = strtoul(hexColor.substring(2,4).c_str(), NULL, 16);
+//    unsigned long blue = strtoul(hexColor.substring(4,6).c_str(), NULL, 16);
 
     // Checks for each color
-    if (red > 110 && green < 80 && blue < 80){
-        return "red";
-    }else if (green > 110 && blue < 80 && red < 80){
-        return "green";
-    }else if (blue > 110 && red < 50 && green < 95){
-        return "blue";
-    }else if (red > 90 && green > 90 && blue < 60){
-        return "yellow";
-    }else {
-        return "unknown";
+//    if (red > 110 && green < 80 && blue < 80){
+//        return "red";
+//    }else if (green > 110 && blue < 80 && red < 80){
+//        return "green";
+//    }else if (blue > 110 && red < 50 && green < 95){
+//        return "blue";
+//    }else if (red > 90 && green > 90 && blue < 60){
+//        return "yellow";
+//    }else {
+//        return "unknown";
+//    }
+    String returnstring = "";
+
+    if ((hexColor[0] == '6' || hexColor[0] == '5') &&
+        (hexColor[0] == '6' || hexColor[1] == '9' || hexColor[1] == '8' || hexColor[1] == 'a' || hexColor[1] == 'b' || hexColor[1] == 'c' || hexColor[1] == 'd' || hexColor[1] == 'e' || hexColor[1] == 'f') &&
+        (hexColor[2] == '5' || hexColor[2] == '4') &&
+        (hexColor[4] == '4' || hexColor[4] == '5')) {
+        returnstring += hexColor;
+        returnstring += " is carpet";
     }
+    else if ((hexColor[0] == '5' || hexColor[0] == '4') &&
+             (hexColor[0] == '4' || hexColor[1] == '0' || hexColor[1] == '1' || hexColor[1] == '2' || hexColor[1] == '3' || hexColor[1] == '4' || hexColor[1] == '5' || hexColor[1] == '6' || hexColor[1] == '7') &&
+             (hexColor[2] == '4' || hexColor[2] == '5') &&
+             (hexColor[4] == '4' || hexColor[4] == '5')) {
+        returnstring += hexColor;
+        returnstring += " is white tape";
+    } else if ((hexColor[0] == '7' || hexColor[0] == '8') &&
+               (hexColor[2] == '4' || hexColor[2] == '3') &&
+               (hexColor[4] == '4' || hexColor[4] == '3')) {
+        returnstring += hexColor;
+        returnstring += " is red tape";
+    } else if ((hexColor[0] == '5' || hexColor[0] == '4') &&
+               (hexColor[2] == '6' || hexColor[2] == '7')&&
+               (hexColor[4] == '4')) {
+        returnstring += hexColor;
+        returnstring += " is green tape";
+    } else if (hexColor[0] == '4' && hexColor[2] == '5' && hexColor[4] == '6') {
+        returnstring += hexColor;
+        returnstring += " is blue tape";
+    }else if (hexColor[0] == '6' && hexColor[2] == '5' && hexColor[4] == '3') {
+        returnstring += hexColor;
+        returnstring += " is yellow tape";
+    }
+    else {
+        returnstring += hexColor;
+        returnstring += " is unknown";
+    }
+    return returnstring;
 }
 
 float *AllSensors::getRGBColorArray() {
