@@ -32,13 +32,15 @@ def writeToSerial(dataToSend):
 		closeSerialConnection()
 		return
 
+	if (dataToSend[-1] != '@'):
+		dataToSend = dataToSend + '@'
+
 	# Writes to serial
 	g_SER.write(dataToSend)
 
 # Closes the serial communication
 def closeSerialConnection():
     g_SER.close()
-
 
 # Writes to arduino and waits for a response
 def writeAndReadToSerial(dataToSend):

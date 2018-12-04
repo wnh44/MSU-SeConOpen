@@ -4,8 +4,12 @@
 import cv2
 import numpy as np
 import imutils
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 
-camera = cv2.VideoCapture(0)
+#camera = cv2.VideoCapture(0)
+camera = PiCamera()
+rawCapture = PiRGBArray(camera)
 
 # Color range for inRange function to use
 # Stored as BGR, not RGB for HSV
@@ -20,7 +24,9 @@ mask = 0
 # Saves still of image
 def getImage():
     # read is the easiest way to get a full image out of a VideoCapture object.
-    retval, im = camera.read()
+    #retval, im = camera.read()
+    camera.capture(rawCapture, format="bgr")
+    im = rawCapture.array
     return im
 
 # Updates the color & upper color ranges when clicking on hsv
@@ -57,15 +63,11 @@ def getObjectSpecs(mask):
         # find the largest contour in the mask, then use
         # it to compute the minimum enclosing circle and
         # centroid
-        try:
-            c = max(cnts, key=cv2.contourArea)
-            ((x, y), radius) = cv2.minEnclosingCircle(c)
-            M = cv2.moments(c)
-            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-            return {"center" : center, "x" : x, "y" : y,"radius" : radius}
-        except:
-            print("Error getting center")
-            return {"center" : 1, "x" : 1, "y" : y,"radius" : 1}
+        c = max(cnts, key=cv2.contourArea)
+        ((x, y), radius) = cv2.minEnclosingCircle(c)
+        M = cv2.moments(c)
+        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        return {"center" : center, "x" : x, "y" : y,"radius" : radius}
 
 
 
@@ -81,24 +83,26 @@ cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
 
 while (True):
-    ret, frame = camera.read()
+    # ret, frame = camera.read()
+    camera.capture(rawCapture, format="bgr")
+    frame = rawCapture.array
     
     # Resize frame so it can be processed quicker
     frame = imutils.resize(frame, width=800)
 
     # Blur to reduce extra noise
-    # blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+    blurred = cv2.GaussianBlur(frame, (11, 11), 0)
 
     # Convert to HSV colorspace
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
     # Gets the places in image between the color two bounds
         # Then removes any extra small blobs
     mask = cv2.inRange(hsv, g_lowerColorRange, g_upperColorRange)
-    # mask = cv2.erode(mask, None, iterations=2)
-    # mask = cv2.dilate(mask, None, iterations=2)
+    mask = cv2.erode(mask, None, iterations=2)
+    mask = cv2.dilate(mask, None, iterations=2)
     objectSpecs = getObjectSpecs(mask)
-    getContours(mask)
+    # getContours(mask)
     if (objectSpecs != None):
         # print("Center: ", objectSpecs["center"])
         cv2.circle(frame, (int(objectSpecs["x"]), int(objectSpecs["y"])), int(objectSpecs["radius"]), (0, 255, 255), 2)
@@ -113,6 +117,8 @@ while (True):
         saveLocation = "/Users/patrickbell/Desktop/savedCapture.jpg"
         cv2.imwrite(saveLocation, getImage())
         break
+
+    rawCapture.truncate(0)
 
 
 # Closes all windows opened

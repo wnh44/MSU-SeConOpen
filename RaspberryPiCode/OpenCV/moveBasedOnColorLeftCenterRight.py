@@ -10,7 +10,7 @@
 # commands to arduino to move accordingly
 #
 # It can take a sys argument of the device number and a HSV color.
-#
+# https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
 #####################################################################
 
 import cv2
@@ -21,14 +21,16 @@ import serial
 import RPi.GPIO as GPIO
 import time
 
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+
+
+
 # Sets up serial
 serialPath = "/dev/ttyACM" + sys.argv[1]
 g_SER=serial.Serial(serialPath,9600)  # Change ACM number as found from ls /dev/tty/ACM*
 g_SER.baudrate=9600
 
-
-# Starts the camera feed
-camera = cv2.VideoCapture(0)
 
 # Color range for inRange function to use
 # Stored as BGR, not RGB for HSV
@@ -38,7 +40,6 @@ if (len(sys.argv) == 5):
     baseColor = (int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]))
 else:
     baseColor = (67, 125, 90)
-
 
 
 g_lowerColorRange = (0,0,0)
@@ -84,21 +85,25 @@ def getObjectSpecs(mask):
     center = None
 
     # only proceed if at least one contour was found
-    if len(cnts) > 0:
-        # find the largest contour in the mask, then use
-        # it to compute the minimum enclosing circle and
-        # centroid
+    # if len(cnts) > 0:
+    # find the largest contour in the mask, then use
+    # it to compute the minimum enclosing circle and
+    # centroid
+    try:
         c = max(cnts, key=cv2.contourArea)
         ((x, y), radius) = cv2.minEnclosingCircle(c)
         M = cv2.moments(c)
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         return {"center" : center, "x" : x, "y" : y,"radius" : radius}
+    except:
+        print("Error getting center")
+        return None
 
 # Names the windows
-cv2.namedWindow("frame")
+#cv2.namedWindow("frame")
 #cv2.namedWindow("hsv")
 #cv2.namedWindow("mask")
-cv2.setMouseCallback("frame", updateColorRangeWhenClick)
+#cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
 # Reads from serial, returns the text
 def readFromSerial():
@@ -112,6 +117,9 @@ def writeToSerial(dataToSend):
 		closeSerialConnection()
 		return
 
+	if (dataToSend[-1] != '@'):
+		dataToSend = dataToSend + '@'
+
 	# Writes to serial
 	g_SER.write(dataToSend)
 
@@ -121,55 +129,80 @@ def closeSerialConnection():
 
 # Writes to arduino and waits for a response
 def writeAndReadToSerial(dataToSend):
+    print("About to write")
     writeToSerial(dataToSend)
+    print("about to read")
     dataReceived = readFromSerial()
     return dataReceived
 
 
-while (True):
-    ret, frame = camera.read()
-    
+
+
+
+# Starts the camera feed
+camera = PiCamera()
+camera.resolution = (frameWidth, frameWidth)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera)
+
+# allow the camera to warmup
+time.sleep(1)
+
+
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+    # start = time.time()
+    frame = frame.array
+
     # Resize frame so it can be processed quicker
-    frame = imutils.resize(frame, width=frameWidth)
+    #frame = imutils.resize(frame, width=frameWidth)
 
     # Blur to reduce extra noise
-    blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+    # blurred = cv2.GaussianBlur(frame, (11, 11), 0)    # Takes about half a second
 
     # Convert to HSV colorspace
-    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)        # hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
     # Gets the places in image between the color two bounds
         # Then removes any extra small blobs
     mask = cv2.inRange(hsv, g_lowerColorRange, g_upperColorRange)
-    mask = cv2.erode(mask, None, iterations=2)
-    mask = cv2.dilate(mask, None, iterations=2)
+    # mask = cv2.erode(mask, None, iterations=2)     // These two take about .3 seconds
+    # mask = cv2.dilate(mask, None, iterations=2)    // These two take about .3 seconds
+
     objectSpecs = getObjectSpecs(mask)
-    if (objectSpecs != None):
+    # if (objectSpecs != None):
         # print("Center: ", objectSpecs["center"])
-        cv2.circle(frame, (int(objectSpecs["x"]), int(objectSpecs["y"])), int(objectSpecs["radius"]), (0, 255, 255), 2)
+        # cv2.circle(frame, (int(objectSpecs["x"]), int(objectSpecs["y"])), int(objectSpecs["radius"]), (0, 255, 255), 2)
 
 
-    #cv2.imshow('hsv', hsv)
-    #cv2.imshow('mask', mask)
-    cv2.imshow('frame', frame)
 
     # Takes a picture and saves and closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
         break
 
+    pixelErrorDifference = frameWidth*0.1
+
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]))-pixelErrorDifference <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]))+pixelErrorDifference >= frameWidth/2):
             print("Its in the center")
-            received = writeAndReadToSerial("GO forward 100@")
+            received = writeAndReadToSerial("GO forward 80@")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
-            print("Its on the left")
-            received = writeAndReadToSerial("GO left 30@")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             print("Its on the right")
-            received = writeAndReadToSerial("GO right 30@")
-    else:
-        received = writeAndReadToSerial("GO stop")
+            received = writeAndReadToSerial("GO right 25@")
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+            print("Its on the left")
+            received = writeAndReadToSerial("GO left 25@")  
+
+    if (objectSpecs == None):
+        print("Its not found")
+        received = writeAndReadToSerial("GO stop@")
+
+
+
+    # print("Total Time:", time.time() - start)
+    rawCapture.truncate(0)
+    print("Finished Loop\n")
+
 
 
 

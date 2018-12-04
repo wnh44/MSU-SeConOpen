@@ -92,6 +92,8 @@ void parseCommand(String command){
       int motor_speed = motor_speed_string.toInt();
       Serial.println("Going left at speed " + motor_speed_string);
       motors->turnLeft(twist, motor_speed);
+    }else {
+      Serial.println("Incorrect GO command");
     }
   }
   
