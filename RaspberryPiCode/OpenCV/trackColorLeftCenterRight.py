@@ -85,8 +85,8 @@ def getObjectSpecs(mask):
 
 # Names the windows
 cv2.namedWindow("frame")
-#cv2.namedWindow("hsv")
-#cv2.namedWindow("mask")
+cv2.namedWindow("hsv")
+cv2.namedWindow("mask")
 cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
 
@@ -113,14 +113,16 @@ while (True):
         cv2.circle(frame, (int(objectSpecs["x"]), int(objectSpecs["y"])), int(objectSpecs["radius"]), (0, 255, 255), 2)
 
 
-    #cv2.imshow('hsv', hsv)
-    #cv2.imshow('mask', mask)
+    cv2.imshow('hsv', hsv)
+    cv2.imshow('mask', mask)
     cv2.imshow('frame', frame)
 
     # Takes a picture and saves and closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
         break
 
+    # TODO - Change to make it only print if the position changes from left/right/center
+        # - Maybe store variable with current left/right/center
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):

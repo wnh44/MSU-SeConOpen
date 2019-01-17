@@ -1,0 +1,20 @@
+- Clean up current code
+- Make calibration program to read colors
+    - Save the 4 colors to json/text file and load into main program
+- Camera placement (and make rightside up)
+- How to determine block/ball from center post and corners
+    - Use Bounding box to determine which object it is
+        - ex squre/ish is a block/ball, and rectanle is corner or center  
+        - Can we determine block from ball to help hardware team
+    - Detecting lines on the ground
+- How to recognize/avoid space hotels and center
+- Main loop
+    - Spin
+    - Find a block and move towards it (We then pickup block)
+    - Make 1 full rotation looking for a new block
+        - If found go for it
+        - If not, maybe go to center and make a lap around it until one is found
+
+- Create a go to home program
+- Keep global track of time
+    - Maybe have a timer interrupt to get home
