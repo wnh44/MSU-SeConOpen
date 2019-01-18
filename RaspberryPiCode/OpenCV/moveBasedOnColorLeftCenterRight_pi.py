@@ -148,6 +148,8 @@ rawCapture = PiRGBArray(camera)
 # allow the camera to warmup
 time.sleep(1)
 
+# Current area of screen of object being tracked
+currentPosition = None
 
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     # start = time.time()
@@ -184,14 +186,20 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]))-pixelErrorDifference <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]))+pixelErrorDifference >= frameWidth/2):
-            print("Its in the center")
-            received = writeAndReadToSerial("GO forward 80@")
+            if (currentPosition != "center"):
+                currentPosition = "center"
+                print("Its in the center")
+                received = writeAndReadToSerial("GO forward 80@")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
-            print("Its on the right")
-            received = writeAndReadToSerial("GO right 25@")
+            if (currentPosition != "right"):
+                currentPosition = "right"
+                print("Its on the right")
+                received = writeAndReadToSerial("GO right 25@")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
-            print("Its on the left")
-            received = writeAndReadToSerial("GO left 25@")  
+            if (currentPosition != "left"):
+                currentPosition = "left"
+                print("Its on the left")
+                received = writeAndReadToSerial("GO left 25@")  
 
     if (objectSpecs == None):
         print("Its not found")

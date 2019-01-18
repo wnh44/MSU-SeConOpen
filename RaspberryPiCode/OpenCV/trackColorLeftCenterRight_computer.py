@@ -89,6 +89,9 @@ cv2.namedWindow("hsv")
 cv2.namedWindow("mask")
 cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
+# Current area of screen of object being tracked
+currentPosition = None
+
 
 while (True):
     ret, frame = camera.read()
@@ -123,14 +126,21 @@ while (True):
 
     # TODO - Change to make it only print if the position changes from left/right/center
         # - Maybe store variable with current left/right/center
+
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
-            print("Its in the center")
+            if (currentPosition != "center"):
+                currentPosition = "center"
+                print("Its in the center")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
-            print("Its on the left")
+            if (currentPosition != "left"):
+                currentPosition = "left"
+                print("Its on the left")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
-            print("Its on the right")
+            if (currentPosition != "right"):
+                currentPosition = "right"
+                print("Its on the right")
 
 
 
