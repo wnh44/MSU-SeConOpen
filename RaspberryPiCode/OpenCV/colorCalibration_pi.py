@@ -10,6 +10,9 @@ import json
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 
+# Width of frame
+frameWidth = 500
+
 # Starts the camera feed
 camera = PiCamera()
 camera.resolution = (frameWidth, frameWidth)
@@ -22,8 +25,6 @@ time.sleep(1)
 # Stores all 4 colors needed for tracking
 colors = []
 
-# Width of frame
-frameWidth = 500
 
 # Takes frame and gets color
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -38,7 +39,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # Gets color from middle pixel
     color = hsv[int(frameWidth/2), int(frameWidth/2)].tolist()
     print(color)
-    
+
     # Add color to list
     colors.append(color)
 
