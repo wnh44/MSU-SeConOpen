@@ -11,7 +11,7 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 
 # Width of frame
-frameWidth = 500
+frameWidth = 512
 
 # Starts the camera feed
 camera = PiCamera()
@@ -47,6 +47,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if (len(colors) == 4):
         break
 
+    # Clears the frame buffer
+    rawCapture.truncate(0)
+
     # Sleeps for x seconds so the robot can be moved to next side
     time.sleep(7)
 
@@ -54,7 +57,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 output = json.dumps(colors)
 
 # Saves it to a file
-with open('colorCalibaration.json', 'w') as f:
+with open('colorCalibration.json', 'w') as f:
     f.write(output)
 
 
