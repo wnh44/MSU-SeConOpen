@@ -35,9 +35,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Convert to HSV colorspace
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
 
     # Gets color from middle pixel
-    color = hsv[int(frameWidth/2), int(frameWidth/2)].tolist()
+    color = hsv[center[1], center[0]].tolist()
     print(color)
 
     # Add color to list

@@ -1,5 +1,5 @@
-- Clean up current code
-- Make calibration program to read colors
+X - Clean up current code
+X - Make calibration program to read colors
     - Save the 4 colors to json/text file and load into main program
 - Camera placement (and make rightside up)
 - How to determine block/ball from center post and corners

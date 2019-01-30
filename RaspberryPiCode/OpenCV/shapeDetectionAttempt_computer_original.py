@@ -14,12 +14,11 @@ import cv2
 import numpy as np
 import imutils
 import sys
+import json
+import time
 
 # Starts the camera feed
 camera = cv2.VideoCapture(0)
-
-# Color range for inRange function to use
-# Stored as BGR, not RGB for HSV
 
 # Gets base color from command line, else uses hardcoded
 if (len(sys.argv) == 4):
@@ -28,10 +27,9 @@ else:
     baseColor = (67, 125, 90)
 
 
-
 g_lowerColorRange = (0,0,0)
 g_upperColorRange = (0,0,0)
-percentDifference = 0.4
+percentDifference = 0.5
 
 # Sets up color ranges based on base given color
 g_lowerColorRange = (baseColor[0] - baseColor[0]*percentDifference, baseColor[1] - baseColor[1]*percentDifference, baseColor[2] - baseColor[2]*percentDifference)
@@ -42,6 +40,13 @@ hsv = 0
 frame = 0
 mask = 0
 frameWidth = 800
+
+# Loads all 4 colors from JSON file
+def getColorsFromJSON(fileLocation):
+    colors = []
+    with open(fileLocation, 'r') as f:
+        colors = json.loads(f.readline().rstrip('\n'))
+    return colors
 
 # Updates the color & upper color ranges when clicking on hsv
 def updateColorRangeWhenClick(event, x, y, flags, param):
@@ -54,49 +59,101 @@ def updateColorRangeWhenClick(event, x, y, flags, param):
     g_lowerColorRange = (color[0] - color[0]*percentDifference, color[1] - color[1]*percentDifference, color[2] - color[2]*percentDifference)
     g_upperColorRange = (color[0] + color[0]*percentDifference, color[1] + color[1]*percentDifference, color[2] + color[2]*percentDifference)
     print("Color: ", color)
-    # print("Lower: ", g_lowerColorRange)
-    # print("Upper: ", g_upperColorRange)
-
-# Gets all the contours for that mask
-def getContours(mask):
-    # Should this only be 2 params???
-    im2, contours, hierarchy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    print(len(contours))
-    if (len(contours) > 1):
-        cv2.drawContours(frame, contours, 0, (0,255,0), 3)
-        cv2.drawContours(frame, contours, 1, (255,0,0), 3)
 
 # Returns the center of object and the enclosing circle x, y and radius of object
 def getObjectSpecs(mask):
-    # cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # cnts = cnts[0] if imutils.is_cv2() else cnts[1]
     image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     center = None
-
 
     # only proceed if at least one contour was found
     if len(contours) > 0:
         # find the largest contour in the mask, then use
         # it to compute the minimum enclosing circle and
         # centroid
-        c = max(contours, key=cv2.contourArea)
-        ((x, y), radius) = cv2.minEnclosingCircle(c)
-        M = cv2.moments(c)
-        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        return {"center" : center, "x" : x, "y" : y,"radius" : radius}
+        try:
+            largestContour = max(contours, key=cv2.contourArea)
+            ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
+            M = cv2.moments(largestContour)
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            # approxShape = detectShape(largestContour)
+            # print("Approx Shape: " + approxShape)
+            return {"center" : center, "x" : x, "y" : y,"radius" : radius}
+        except:
+            return None
+
+# Loops through all contours and labels/outlines the shapes
+def identifyAndLabelAllShapes(mask, frame):
+    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    for contour in contours:
+        try:
+            ((x, y), radius) = cv2.minEnclosingCircle(contour)
+            M = cv2.moments(contour)
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            approxShape, aspectRatio = detectShape(contour)
+            specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
+            
+            cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            cv2.putText(frame, str(aspectRatio), (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
+        except:
+            None
+
+# Detects the shape of the contour
+def detectShape(contour):
+    # Source: https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
+    # initialize the shape name and approximate the contour
+    shape = "unidentified"
+    peri = cv2.arcLength(contour, True)
+    approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
+    aspectRatio = 0
+
+    # if the shape is a triangle, it will have 3 vertices
+    if len(approx) == 3:
+        shape = "triangle"
+
+    # if the shape has 4 vertices, it is either a square or
+    # a rectangle
+    elif len(approx) == 4:
+        # compute the bounding box of the contour and use the
+        # bounding box to compute the aspect ratio
+        (x, y, w, h) = cv2.boundingRect(approx)
+        aspectRatio = w / float(h)
+
+        # a square will have an aspect ratio that is approximately
+        # equal to one, otherwise, the shape is a rectangle
+        if aspectRatio < 0.35:
+            shape = "Corner Post"
+        elif aspectRatio >= 0.35 and aspectRatio <= 0.85:
+            shape = "Center Post"
+        elif aspectRatio > 0.85:
+            shape = "Block"
+
+
+    # otherwise, we assume the shape is a circle
+    else:
+        shape = "circle"
+
+    # return the name of the shape
+    return shape, aspectRatio
+
 
 
 # Names the windows
 cv2.namedWindow("frame")
-cv2.namedWindow("hsv")
-cv2.namedWindow("mask")
+# cv2.namedWindow("hsv")
+# cv2.namedWindow("mask")
 cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
 # Current area of screen of object being tracked
 currentPosition = None
 
+colorSaved = 'colorCalibration.json'
+colors = getColorsFromJSON(colorSaved)
+
 
 while (True):
+    startTime = time.time()
     ret, frame = camera.read()
     
     # Resize frame so it can be processed quicker
@@ -111,16 +168,13 @@ while (True):
     # Gets the places in image between the color two bounds
         # Then removes any extra small blobs
     mask = cv2.inRange(hsv, g_lowerColorRange, g_upperColorRange)
-    mask = cv2.erode(mask, None, iterations=2)
-    mask = cv2.dilate(mask, None, iterations=2)
+    # mask = cv2.erode(mask, None, iterations=2)
+    # mask = cv2.dilate(mask, None, iterations=2)
     objectSpecs = getObjectSpecs(mask)
-    if (objectSpecs != None):
-        # print("Center: ", objectSpecs["center"])
-        cv2.circle(frame, (int(objectSpecs["x"]), int(objectSpecs["y"])), int(objectSpecs["radius"]), (0, 255, 255), 2)
+    identifyAndLabelAllShapes(mask, frame)
 
-
-    cv2.imshow('hsv', hsv)
-    cv2.imshow('mask', mask)
+    # cv2.imshow('hsv', hsv)
+    # cv2.imshow('mask', mask)
     cv2.imshow('frame', frame)
 
     # Takes a picture and saves and closes when pressing 's'
@@ -145,6 +199,8 @@ while (True):
                 currentPosition = "right"
                 print("Its on the right")
 
+    totalTime = time.time() - startTime
+    # print("Frame time: ", totalTime)
 
 
 # Closes all windows opened
