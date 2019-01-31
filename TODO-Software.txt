@@ -18,3 +18,6 @@ X - Make calibration program to read colors
 - Create a go to home program
 - Keep global track of time
     - Maybe have a timer interrupt to get home
+
+- Add color sensor to bottom
+    - have it detect which lines it goes over to determine which quadrant it is in based on ordering/color of lines

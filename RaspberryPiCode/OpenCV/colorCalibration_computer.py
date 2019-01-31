@@ -13,10 +13,11 @@ camera = cv2.VideoCapture(0)
 time.sleep(1)
 
 # Stores all 4 colors needed for tracking
-colors = []
+allColors = []
 
 # Width of frame
 frameWidth = 500
+percentDifference = 0.6
 
 loadedColors = [[ 25,184, 158], [179, 192, 125], [ 78, 208, 54], [111, 241, 94]]
 colors = []
@@ -40,30 +41,42 @@ while (True):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     masks = []
-    for color in colors:
-        mask = cv2.inRange(hsv, color['lower'], color['upper'])
+    for individualColor in colors:
+        mask = cv2.inRange(hsv, individualColor['lower'], individualColor['upper'])
         masks.append(mask)
 
+    # Combines all masks 
+    mask = cv2.bitwise_or(masks[0], masks[1])
+    mask = cv2.bitwise_or(mask, masks[2])
+    mask = cv2.bitwise_or(mask, masks[3])
 
+    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
+    largestContour = max(contours, key=cv2.contourArea)
+    ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
+    M = cv2.moments(largestContour)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+
+    newColor = hsv[center[1], center[0]].tolist()
+
+    # center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
 
     # Gets color from middle pixel
-    color = hsv[center[1], center[0]].tolist()
-    print(color)
+    # color = hsv[center[1], center[0]].tolist()
+    print(newColor)
 
     # Add color to list
-    colors.append(color)
+    allColors.append(newColor)
 
     # Break out of loop if all 4 colors are gotten
-    if (len(colors) == 4):
+    if (len(allColors) == 4):
         break
 
     # Sleeps for x seconds so the robot can be moved to next side
-    time.sleep(15)
+    time.sleep(10)
 
 # Converts it to JSON format
-output = json.dumps(colors)
+output = json.dumps(allColors)
 
 # Saves it to a file
 with open('colorCalibration.json', 'w') as f:

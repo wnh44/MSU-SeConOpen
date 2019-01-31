@@ -123,7 +123,7 @@ def identifyAndLabelAllShapes(mask, frame):
                 specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
                 
                 cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                cv2.putText(frame, str(aspectRatio), (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                cv2.putText(frame, str(aspectRatio)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                 cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
 
                 # Calculates are of contour and saves if largest and block/circle
@@ -143,6 +143,11 @@ def detectShape(contour):
     peri = cv2.arcLength(contour, True)
     approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
     aspectRatio = 0
+    
+    ((x, y), radius) = cv2.minEnclosingCircle(contour)
+    M = cv2.moments(contour)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    (x, y, w, h) = cv2.boundingRect(approx)
 
     # if the shape is a triangle, it will have 3 vertices
     if len(approx) == 3:
@@ -160,15 +165,18 @@ def detectShape(contour):
         # equal to one, otherwise, the shape is a rectangle
         if aspectRatio < 0.35:
             shape = "Corner Post"
-        elif aspectRatio >= 0.35 and aspectRatio <= 0.85:
+        elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2:
             shape = "Center Post"
-        elif aspectRatio > 0.85:
+        elif aspectRatio > 0.80:
             shape = "Block"
 
 
     # otherwise, we assume the shape is a circle
     else:
-        shape = "circle"
+        if (center[0]+h/2 < frameHeight/2):
+            shape = "Center Post"
+        else:
+            shape = "circle"
 
     # return the name of the shape
     return shape, aspectRatio
