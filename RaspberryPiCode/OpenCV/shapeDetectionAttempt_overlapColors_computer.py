@@ -34,7 +34,7 @@ else:
 
 g_lowerColorRange = (0,0,0)
 g_upperColorRange = (0,0,0)
-percentDifference = 0.6
+percentDifference = 0.4
 
 # Sets up color ranges based on base given color
 g_lowerColorRange = (baseColor[0] - baseColor[0]*percentDifference, baseColor[1] - baseColor[1]*percentDifference, baseColor[2] - baseColor[2]*percentDifference)
@@ -110,8 +110,12 @@ def identifyAndLabelAllShapes(mask, frame):
     largestContour = None
     largestArea = 0
 
+    # Sorts contours by size
+    sortedContours = sorted(contours, key=lambda x: cv2.contourArea(x))
+    sortedContours.reverse()
 
-    for contour in contours:
+    # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
+    for contour in sortedContours[:8]:
         try:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             M = cv2.moments(contour)
@@ -120,21 +124,29 @@ def identifyAndLabelAllShapes(mask, frame):
             # Only uses object if below halfway
             if (center[1] > frameHeight*.33):
                 approxShape, aspectRatio = detectShape(contour)
+                area = cv2.contourArea(contour)
                 specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
+
+                # If area of object is less than amount, ignore it, probably an artifcat
+                if (area < 75):
+                    continue
+
                 
                 cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-                cv2.putText(frame, str(aspectRatio)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                cv2.putText(frame, str(area)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
+                # cv2.putText(frame, str(aspectRatio)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                 cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
 
-                # Calculates are of contour and saves if largest and block/circle
-                area = cv2.contourArea(contour)
+                # Calculates area of contour and saves if largest and block/circle
                 if (area > largestArea and (approxShape == "Block" or approxShape == "Circle")):
                     largestArea = area
                     largestContour = contour
+                
         except:
             None
 
     return (largestContour, largestArea)
+
 # Detects the shape of the contour
 def detectShape(contour):
     # Source: https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
@@ -148,6 +160,7 @@ def detectShape(contour):
     M = cv2.moments(contour)
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
     (x, y, w, h) = cv2.boundingRect(approx)
+    area = cv2.contourArea(contour)
 
     # if the shape is a triangle, it will have 3 vertices
     if len(approx) == 3:
@@ -165,18 +178,20 @@ def detectShape(contour):
         # equal to one, otherwise, the shape is a rectangle
         if aspectRatio < 0.35:
             shape = "Corner Post"
-        elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2:
+        # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
+        elif area > 10000:
             shape = "Center Post"
-        elif aspectRatio > 0.80:
+        elif aspectRatio > 0.60:
             shape = "Block"
 
 
     # otherwise, we assume the shape is a circle
     else:
-        if (center[0]+h/2 < frameHeight/2):
+        # if (center[0]+h/2 < frameHeight/2 or area > 10000):
+        if (area > 10000):
             shape = "Center Post"
         else:
-            shape = "circle"
+            shape = "Circle"
 
     # return the name of the shape
     return shape, aspectRatio
@@ -184,9 +199,9 @@ def detectShape(contour):
 
 
 # Names the windows
-cv2.namedWindow("frame")
-cv2.namedWindow("hsv")
 cv2.namedWindow("mask")
+cv2.namedWindow("frame")
+# cv2.namedWindow("hsv")
 cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
 # Current area of screen of object being tracked
@@ -227,21 +242,16 @@ while (True):
     objectSpecs = getObjectSpecs(mask)
     largestContourAndArea = identifyAndLabelAllShapes(mask, frame)
 
-    # #If given contour is larger than current largest, overwrite
-    # if (contourAndArea[1] > largestContourAndArea[1]):
-    #     largestContourAndArea = contourAndArea
-
-
     
     # # Outlines largest contour that is a shape or ball
     if (largestContourAndArea[1] != 0):
         cv2.drawContours(frame, [largestContourAndArea[0]], -1, (0,0,0), 2)
 
-    cv2.imshow('hsv', hsv)
-    cv2.imshow('mask', mask)
+    # cv2.imshow('hsv', hsv)
     cv2.imshow('frame', frame)
+    cv2.imshow('mask', mask)
 
-    # Takes a picture and saves and closes when pressing 's'
+    # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
         break
 
