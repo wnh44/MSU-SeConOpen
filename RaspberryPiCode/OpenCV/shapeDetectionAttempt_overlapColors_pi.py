@@ -21,7 +21,17 @@ import imutils
 import sys
 import json
 import time
+import serial
+import RPi.GPIO as GPIO
 
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+
+
+# Sets up serial
+# serialPath = "/dev/ttyACM" + sys.argv[1]
+# g_SER=serial.Serial(serialPath,9600)  # Change ACM number as found from ls /dev/tty/ACM*
+# g_SER.baudrate=9600
 
 
 # Creates the vars to avoid error in functions
@@ -33,7 +43,7 @@ frameHeight = 400
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
-outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'mp4v'), 25, (int(camera.get(3)),int(camera.get(4))))
+outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('D','I','V','X'), 20.0, (int(camera.get(3)),int(camera.get(4))))
 
 # Gets base color from command line, else uses hardcoded
 if (len(sys.argv) == 4):
@@ -204,10 +214,10 @@ def detectShape(contour):
 
 
 # Names the windows
-cv2.namedWindow("mask")
+# cv2.namedWindow("mask")
 cv2.namedWindow("frame")
 # cv2.namedWindow("hsv")
-cv2.setMouseCallback("frame", updateColorRangeWhenClick)
+# cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
 # Current area of screen of object being tracked
 currentPosition = None
@@ -217,9 +227,20 @@ colorSavedFile = 'colorCalibration.json'
 colors = getColorsFromJSON(colorSavedFile)
 
 
-while (True):
+# Starts the camera feed
+camera = PiCamera()
+camera.resolution = (frameWidth, frameWidth)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera)
+
+# allow the camera to warmup
+time.sleep(1)
+
+
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     startTime = time.time()
-    ret, frame = camera.read()
+    frame = frame.array
+
     
     # Resize frame so it can be processed quicker
     frame = imutils.resize(frame, height=frameHeight)
@@ -254,7 +275,7 @@ while (True):
 
     # cv2.imshow('hsv', hsv)
     cv2.imshow('frame', frame)
-    cv2.imshow('mask', mask)
+    # cv2.imshow('mask', mask)
 
     # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
@@ -280,6 +301,8 @@ while (True):
 
     totalTime = time.time() - startTime
     outputVideo.write(frame)
+    rawCapture.truncate(0)
+
 
     # print("Frame time: ", totalTime)
 
