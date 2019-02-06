@@ -43,7 +43,7 @@ frameHeight = 400
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
-outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('D','I','V','X'), 20.0, (int(camera.get(3)),int(camera.get(4))))
+# outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('D','I','V','X'), 20.0, (int(camera.get(3)),int(camera.get(4))))
 
 # Gets base color from command line, else uses hardcoded
 if (len(sys.argv) == 4):
@@ -279,6 +279,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
+        cv2.imwrite( "finalImage.jpg", frame)
         break
 
     # TODO - Change to make it only print if the position changes from left/right/center
@@ -300,7 +301,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("Its on the right")
 
     totalTime = time.time() - startTime
-    outputVideo.write(frame)
+    # outputVideo.write(frame)
     rawCapture.truncate(0)
 
 
@@ -309,5 +310,5 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
 # Closes all windows opened
 camera.release()
-outputVideo.release()
+# outputVideo.release()
 #camera.destroyAllWindows()

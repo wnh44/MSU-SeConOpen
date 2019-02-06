@@ -176,7 +176,6 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         received = writeAndReadToSerial("GO stop@")
 
 
-
     # print("Total Time:", time.time() - start)
     rawCapture.truncate(0)
     print("Finished Loop\n")
