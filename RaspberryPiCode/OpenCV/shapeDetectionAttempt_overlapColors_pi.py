@@ -93,7 +93,8 @@ def updateColorRangeWhenClick(event, x, y, flags, param):
 
 # Returns the center of object and the enclosing circle x, y and radius of object
 def getObjectSpecs(mask):
-    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = cnts[0] if imutils.is_cv2() else cnts[1]
     center = None
 
     # only proceed if at least one contour was found
@@ -120,7 +121,8 @@ def getObjectSpecs(mask):
 
 # Loops through all contours and labels/outlines the shapes
 def identifyAndLabelAllShapes(mask, frame):
-    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = cnts[0] if imutils.is_cv2() else cnts[1]
 
     largestContour = None
     largestArea = 0
