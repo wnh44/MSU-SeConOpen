@@ -54,7 +54,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     mask = cv2.bitwise_or(mask, masks[2])
     mask = cv2.bitwise_or(mask, masks[3])
 
-    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = cnts[0] if imutils.is_cv2() else cnts[1]
 
     largestContour = max(contours, key=cv2.contourArea)
     ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
