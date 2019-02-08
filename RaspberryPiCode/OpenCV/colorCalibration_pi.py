@@ -28,7 +28,11 @@ for color in loadedColors:
     temp['upper'] = (color[0] + color[0]*percentDifference, color[1] + color[1]*percentDifference, color[2] + color[2]*percentDifference)
     colors.append(temp)
 
-
+# Starts the camera feed
+camera = PiCamera()
+camera.resolution = (frameWidth, frameWidth)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera)
 
 # Takes frame and gets color
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -56,7 +60,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
     M = cv2.moments(largestContour)
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-    # Yeet
+    
     newColor = hsv[center[1], center[0]].tolist()
 
     # center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
