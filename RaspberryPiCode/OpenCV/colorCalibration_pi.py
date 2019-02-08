@@ -34,6 +34,8 @@ camera.resolution = (frameWidth, frameWidth)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera)
 
+colorNumber = 0
+
 # Takes frame and gets color
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     frame = frame.array
@@ -63,6 +65,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
     
     newColor = hsv[center[1], center[0]].tolist()
+    colorNumber += 1
+    cv2.putText(frame, "Here", (int(center[1]), int(center[0])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+    cv2.imwrite( "color" + colorNumber + ".jpg", frame)
 
     # center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
 
