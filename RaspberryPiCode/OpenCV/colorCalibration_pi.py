@@ -56,7 +56,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
     M = cv2.moments(largestContour)
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
+    # Yeet
     newColor = hsv[center[1], center[0]].tolist()
 
     # center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
