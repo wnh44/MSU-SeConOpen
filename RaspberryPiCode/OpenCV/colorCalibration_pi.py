@@ -10,20 +10,24 @@ import json
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 
-# Width of frame
-frameWidth = 512
-
-# Starts the camera feed
-camera = PiCamera()
-camera.resolution = (frameWidth, frameWidth)
-camera.framerate = 32
-rawCapture = PiRGBArray(camera)
-
 # allow the camera to warmup
 time.sleep(1)
 
 # Stores all 4 colors needed for tracking
+allColors = []
+
+# Width of frame
+frameWidth = 500
+percentDifference = 0.6
+
+loadedColors = [[ 25,184, 158], [179, 192, 125], [ 78, 208, 54], [111, 241, 94]]
 colors = []
+for color in loadedColors:
+    temp = {}
+    temp['lower'] = (color[0] - color[0]*percentDifference, color[1] - color[1]*percentDifference, color[2] - color[2]*percentDifference)
+    temp['upper'] = (color[0] + color[0]*percentDifference, color[1] + color[1]*percentDifference, color[2] + color[2]*percentDifference)
+    colors.append(temp)
+
 
 
 # Takes frame and gets color
@@ -35,24 +39,43 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Convert to HSV colorspace
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
+
+    masks = []
+    for individualColor in colors:
+        mask = cv2.inRange(hsv, individualColor['lower'], individualColor['upper'])
+        masks.append(mask)
+
+    # Combines all masks 
+    mask = cv2.bitwise_or(masks[0], masks[1])
+    mask = cv2.bitwise_or(mask, masks[2])
+    mask = cv2.bitwise_or(mask, masks[3])
+
+    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    largestContour = max(contours, key=cv2.contourArea)
+    ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
+    M = cv2.moments(largestContour)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+
+    newColor = hsv[center[1], center[0]].tolist()
+
+    # center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
 
     # Gets color from middle pixel
-    color = hsv[center[1], center[0]].tolist()
-    print(color)
+    # color = hsv[center[1], center[0]].tolist()
+    print(newColor)
 
     # Add color to list
-    colors.append(color)
+    allColors.append(newColor)
 
     # Break out of loop if all 4 colors are gotten
-    if (len(colors) == 4):
+    if (len(allColors) == 4):
         break
 
-    # Clears the frame buffer
+    # Sleeps for x seconds so the robot can be moved to next side
+    time.sleep(10)
     rawCapture.truncate(0)
 
-    # Sleeps for x seconds so the robot can be moved to next side
-    time.sleep(7)
 
 # Converts it to JSON format
 output = json.dumps(colors)

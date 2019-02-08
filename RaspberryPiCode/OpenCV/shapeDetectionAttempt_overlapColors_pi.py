@@ -193,12 +193,12 @@ def detectShape(contour):
 
         # a square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle
-        if aspectRatio < 0.35:
+        if aspectRatio < 0.4:
             shape = "Corner Post"
         # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
         elif area > 10000:
             shape = "Center Post"
-        elif aspectRatio > 0.60:
+        elif aspectRatio > 0.40:    #Was 0.6
             shape = "Block"
 
 
@@ -307,7 +307,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     rawCapture.truncate(0)
 
 
-    # print("Frame time: ", totalTime)
+    print("Frame time: ", totalTime)
 
 
 # Closes all windows opened
