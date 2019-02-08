@@ -67,7 +67,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     newColor = hsv[center[1], center[0]].tolist()
     colorNumber += 1
     cv2.putText(frame, "Here", (int(center[1]), int(center[0])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-    cv2.imwrite( "color" + colorNumber + ".jpg", frame)
+    cv2.imwrite( "color" + str(colorNumber) + ".jpg", frame)
 
     # center = [int(frame.shape[1]/2), int(frame.shape[0]/2)]
 
