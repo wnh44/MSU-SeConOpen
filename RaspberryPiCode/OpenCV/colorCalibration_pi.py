@@ -88,7 +88,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
 
 # Converts it to JSON format
-output = json.dumps(colors)
+output = json.dumps(allColors)
 
 # Saves it to a file
 with open('colorCalibration.json', 'w') as f:
