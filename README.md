@@ -7,20 +7,18 @@ Meeting times are 12:30 Tuesdays and 10:30 Fridays
 # The Team:
 Spencer Barney: Hardware Team Lead
 
-Will Harrison: Software Team Lead
+Will Harrison: Former Software Team Lead and Professional Traitor 
 
-Patrick Belt
+Patrick Belt: Software Team Lead
 
 Jake Gyllenhall
 
 Adrianna Spencer
 
-Brooke Clark
+Brooke Clerka
 
 Liam Neeson
 
 Jadwin Manual
 
-Kumar Zjaveri
-
-Sarah McDonalds
+Reed Billiams
