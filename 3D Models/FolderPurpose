@@ -1,0 +1,4 @@
+This folder is to store our CAD files for printing.
+
+All files are from AutoDesk applications, such as Inventor and Fushion360. Files may include part files (.ipt), drawings (.dwg), and assemblies (.iam).
+Additional .stl files may be included for 3D printing purposes.
