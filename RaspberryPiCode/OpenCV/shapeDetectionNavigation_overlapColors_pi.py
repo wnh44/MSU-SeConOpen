@@ -21,7 +21,17 @@ import imutils
 import sys
 import json
 import time
+import serial
+import RPi.GPIO as GPIO
 
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+
+
+# Sets up serial
+serialPath = "/dev/ttyACM" + sys.argv[1]
+g_SER=serial.Serial(serialPath,9600)  # Change ACM number as found from ls /dev/tty/ACM*
+g_SER.baudrate=9600
 
 
 # Creates the vars to avoid error in functions
@@ -33,7 +43,7 @@ frameHeight = 400
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
-outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'mp4v'), 25, (int(camera.get(3)),int(camera.get(4))))
+# outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('D','I','V','X'), 20.0, (int(camera.get(3)),int(camera.get(4))))
 
 # Gets base color from command line, else uses hardcoded
 if (len(sys.argv) == 4):
@@ -82,35 +92,26 @@ def updateColorRangeWhenClick(event, x, y, flags, param):
     print("Color: ", color)
 
 # Returns the center of object and the enclosing circle x, y and radius of object
-def getObjectSpecs(mask):
-    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    center = None
+def getObjectSpecs(largestContour):
 
-    # only proceed if at least one contour was found
-    if len(contours) > 0:
-        # find the largest contour in the mask, then use
-        # it to compute the minimum enclosing circle and
-        # centroid
-        try:
-            largestContour = max(contours, key=cv2.contourArea)
-            ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
-            M = cv2.moments(largestContour)
-            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
+    M = cv2.moments(largestContour)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-            # Ignores object if shape is above halfway point
-            if (center[1] > frameHeight*.33):
-                return None
+    # Ignores object if shape is above halfway point
+    if (center[1] > frameHeight*.33):
+        return None
 
 
-            # approxShape = detectShape(largestContour)
-            # print("Approx Shape: " + approxShape)
-            return {"center" : center, "x" : x, "y" : y,"radius" : radius}
-        except:
-            return None
+    # approxShape = detectShape(largestContour)
+    # print("Approx Shape: " + approxShape)
+    return {"center" : center, "x" : x, "y" : y,"radius" : radius}
+
 
 # Loops through all contours and labels/outlines the shapes
 def identifyAndLabelAllShapes(mask, frame):
-    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = cnts[0] if imutils.is_cv2() else cnts[1]
 
     largestContour = None
     largestArea = 0
@@ -181,12 +182,12 @@ def detectShape(contour):
 
         # a square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle
-        if aspectRatio < 0.35:
+        if aspectRatio < 0.4:
             shape = "Corner Post"
         # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
         elif area > 10000:
             shape = "Center Post"
-        elif aspectRatio > 0.60:
+        elif aspectRatio > 0.40:    #Was 0.6
             shape = "Block"
 
 
@@ -201,13 +202,39 @@ def detectShape(contour):
     # return the name of the shape
     return shape, aspectRatio
 
+# Reads from serial, returns the text
+def readFromSerial():
+	dataReceived = g_SER.readline()
+	return dataReceived
 
+# Writes data to serial
+def writeToSerial(dataToSend):
+    # If input is 'quit', it closes the connection
+	if (dataToSend == 'quit'):
+		closeSerialConnection()
+		return
+
+	if (dataToSend[-1] != '@'):
+		dataToSend = dataToSend + '@'
+
+	# Writes to serial
+	g_SER.write(dataToSend)
+
+# Closes the serial communication
+def closeSerialConnection():
+    g_SER.close()
+
+# Writes to arduino and waits for a response
+def writeAndReadToSerial(dataToSend):
+    writeToSerial(dataToSend)
+    dataReceived = readFromSerial()
+    return dataReceived
 
 # Names the windows
-cv2.namedWindow("mask")
+# cv2.namedWindow("mask")
 cv2.namedWindow("frame")
 # cv2.namedWindow("hsv")
-cv2.setMouseCallback("frame", updateColorRangeWhenClick)
+# cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
 # Current area of screen of object being tracked
 currentPosition = None
@@ -217,32 +244,20 @@ colorSavedFile = 'colorCalibration.json'
 colors = getColorsFromJSON(colorSavedFile)
 
 
-def increase_hue(img, value=30):
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
+# Starts the camera feed
+camera = PiCamera()
+camera.resolution = (frameWidth, frameWidth)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera)
 
-    # lim = 255 - value
-    # v[v > lim] = 255
-    # v[v <= lim] += value
-
-    # lim = 255 - value
-    # s[s > lim] = 255
-    # s[s <= lim] += value
-
-    lim = 255 - value
-    h[h > lim] = 255
-    h[h <= lim] += value
-
-    final_hsv = cv2.merge((h, s, v))
-    img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
-    return img
+# allow the camera to warmup
+time.sleep(1)
 
 
-while (True):
+for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     startTime = time.time()
-    ret, frame = camera.read()
+    frame = frame.array
 
-    # frame = increase_hue(frame, 10)
     
     # Resize frame so it can be processed quicker
     frame = imutils.resize(frame, height=frameHeight)
@@ -267,8 +282,8 @@ while (True):
     mask = cv2.bitwise_or(mask, masks[2])
     mask = cv2.bitwise_or(mask, masks[3])
 
-    objectSpecs = getObjectSpecs(mask)
     largestContourAndArea = identifyAndLabelAllShapes(mask, frame)
+    objectSpecs = getObjectSpecs(largestContourAndArea)
 
     
     # # Outlines largest contour that is a shape or ball
@@ -277,10 +292,11 @@ while (True):
 
     # cv2.imshow('hsv', hsv)
     cv2.imshow('frame', frame)
-    cv2.imshow('mask', mask)
+    # cv2.imshow('mask', mask)
 
     # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
+        cv2.imwrite( "finalImage.jpg", frame)
         break
 
     # TODO - Change to make it only print if the position changes from left/right/center
@@ -288,26 +304,31 @@ while (True):
 
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
             if (currentPosition != "center"):
                 currentPosition = "center"
                 print("Its in the center")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
+                received = writeAndReadToSerial("GO forward 80@")
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             if (currentPosition != "left"):
                 currentPosition = "left"
                 print("Its on the left")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+                received = writeAndReadToSerial("GO right 25@")
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
             if (currentPosition != "right"):
                 currentPosition = "right"
                 print("Its on the right")
+                received = writeAndReadToSerial("GO left 25@") 
 
     totalTime = time.time() - startTime
-    outputVideo.write(frame)
+    # outputVideo.write(frame)
+    rawCapture.truncate(0)
 
-    # print("Frame time: ", totalTime)
+
+    print("Frame time: ", totalTime)
 
 
 # Closes all windows opened
 camera.release()
-outputVideo.release()
+# outputVideo.release()
 #camera.destroyAllWindows()

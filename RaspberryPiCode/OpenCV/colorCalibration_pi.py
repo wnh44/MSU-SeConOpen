@@ -96,4 +96,5 @@ with open('colorCalibration.json', 'w') as f:
 
 
 
-
+# Use this to convert to brighter??
+#https://progtpoint.blogspot.com/2017/02/today-im-going-to-show-you-how-to.html
