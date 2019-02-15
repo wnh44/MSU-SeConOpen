@@ -82,31 +82,20 @@ def updateColorRangeWhenClick(event, x, y, flags, param):
     print("Color: ", color)
 
 # Returns the center of object and the enclosing circle x, y and radius of object
-def getObjectSpecs(mask):
-    image, contours, hierarchy = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    center = None
+def getObjectSpecs(largestContour):
 
-    # only proceed if at least one contour was found
-    if len(contours) > 0:
-        # find the largest contour in the mask, then use
-        # it to compute the minimum enclosing circle and
-        # centroid
-        try:
-            largestContour = max(contours, key=cv2.contourArea)
-            ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
-            M = cv2.moments(largestContour)
-            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
+    M = cv2.moments(largestContour)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-            # Ignores object if shape is above halfway point
-            if (center[1] > frameHeight*.33):
-                return None
+    # Ignores object if shape is above halfway point
+    if (center[1] < frameHeight*.33):
+        return None
 
 
-            # approxShape = detectShape(largestContour)
-            # print("Approx Shape: " + approxShape)
-            return {"center" : center, "x" : x, "y" : y,"radius" : radius}
-        except:
-            return None
+    # approxShape = detectShape(largestContour)
+    # print("Approx Shape: " + approxShape)
+    return {"center" : center, "x" : x, "y" : y,"radius" : radius}
 
 # Loops through all contours and labels/outlines the shapes
 def identifyAndLabelAllShapes(mask, frame):
@@ -269,8 +258,9 @@ while (True):
         if (i==0): continue
         mask = cv2.bitwise_or(mask, masks[i])
 
-    objectSpecs = getObjectSpecs(mask)
     largestContourAndArea = identifyAndLabelAllShapes(mask, frame)
+    objectSpecs = getObjectSpecs(largestContourAndArea[0])
+
 
     
     # # Outlines largest contour that is a shape or ball
@@ -304,7 +294,7 @@ while (True):
                 print("Its on the right")
 
     totalTime = time.time() - startTime
-    outputVideo.write(frame)
+    # outputVideo.write(frame)
 
     # print("Frame time: ", totalTime)
 

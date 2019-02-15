@@ -99,7 +99,7 @@ def getObjectSpecs(largestContour):
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
     # Ignores object if shape is above halfway point
-    if (center[1] > frameHeight*.33):
+    if (center[1] < frameHeight*.33):
         return None
 
 
