@@ -6,6 +6,12 @@ import json
 import time
 import serial
 
+
+allColors = []
+frameWidth = 600
+frameHeight = 500
+hsv = None
+
 # -------------------- Pi Stuff Setup --------------------
 import RPi.GPIO as GPIO
 
@@ -24,10 +30,7 @@ time.sleep(1)
 
 # ---------------------------------------------------------
 
-allColors = []
-frameWidth = 600
-frameHeight = 500
-hsv = None
+
 
 # Updates the color & upper color ranges when clicking on hsv
 def updateColorRangeWhenClick(event, x, y, flags, param):
@@ -46,9 +49,6 @@ time.sleep(1)
 
 # Stores all 4 colors needed for tracking
 allColors = []
-
-# Width of frame
-frameWidth = 500
 
 
 cv2.namedWindow("frame")
