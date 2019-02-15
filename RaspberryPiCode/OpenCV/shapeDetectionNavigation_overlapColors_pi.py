@@ -314,17 +314,17 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
             if (currentPosition != "center"):
                 currentPosition = "center"
                 print("Its in the center")
-                received = writeAndReadToSerial("GO forward 80@")
+                received = writeAndReadToSerial("GO forward 70@")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
             if (currentPosition != "right"):
                 currentPosition = "right"
                 print("Its on the right")
-                received = writeAndReadToSerial("GO right 25@")
+                received = writeAndReadToSerial("GO right 20@")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             if (currentPosition != "left"):
                 currentPosition = "left"
                 print("Its on the left")
-                received = writeAndReadToSerial("GO left 25@") 
+                received = writeAndReadToSerial("GO left 20@") 
     else:
         print("No object detected")
 
