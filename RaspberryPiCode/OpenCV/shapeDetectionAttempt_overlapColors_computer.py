@@ -28,8 +28,8 @@ import time
 hsv = 0
 frame = 0
 mask = 0
-frameWidth = 800
-frameHeight = 400
+frameWidth = 600
+frameHeight = 500
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
@@ -245,7 +245,8 @@ while (True):
     # frame = increase_hue(frame, 10)
     
     # Resize frame so it can be processed quicker
-    frame = imutils.resize(frame, height=frameHeight)
+    # frame = imutils.resize(frame, height=frameHeight)
+    frame = cv2.resize(frame,(frameWidth, frameHeight))
 
     # Blur to reduce extra noise
     blurred = cv2.GaussianBlur(frame, (11, 11), 0)

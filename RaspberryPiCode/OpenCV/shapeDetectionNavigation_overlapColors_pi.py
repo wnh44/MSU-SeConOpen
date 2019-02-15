@@ -38,8 +38,8 @@ g_SER.baudrate=9600
 hsv = 0
 frame = 0
 mask = 0
-frameWidth = 800
-frameHeight = 400
+frameWidth = 600
+frameHeight = 500
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
@@ -260,10 +260,14 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     
     # Resize frame so it can be processed quicker
-    frame = imutils.resize(frame, height=frameHeight)
+    # frame = imutils.resize(frame, height=frameHeight)
+    frame = cv2.resize(frame,(frameWidth, frameHeight))
+
 
     # Blur to reduce extra noise
+    blurStart = time.time()
     blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+    print("Blue time:", time.time()-blurStart)
 
     # Convert to HSV colorspace
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
@@ -283,7 +287,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     mask = cv2.bitwise_or(mask, masks[3])
 
     largestContourAndArea = identifyAndLabelAllShapes(mask, frame)
-    objectSpecs = getObjectSpecs(largestContourAndArea)
+    objectSpecs = getObjectSpecs(largestContourAndArea[0])
 
     
     # # Outlines largest contour that is a shape or ball
@@ -304,21 +308,23 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             if (currentPosition != "center"):
                 currentPosition = "center"
                 print("Its in the center")
                 received = writeAndReadToSerial("GO forward 80@")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
             if (currentPosition != "left"):
                 currentPosition = "left"
                 print("Its on the left")
                 received = writeAndReadToSerial("GO right 25@")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             if (currentPosition != "right"):
                 currentPosition = "right"
                 print("Its on the right")
                 received = writeAndReadToSerial("GO left 25@") 
+    else:
+        print("No object detected")
 
     totalTime = time.time() - startTime
     # outputVideo.write(frame)
