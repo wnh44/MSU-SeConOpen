@@ -187,7 +187,7 @@ def detectShape(contour):
         if aspectRatio < 0.4:
             shape = "Corner Post"
         # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
-        elif area > 10000:
+        elif area > 22000:
             shape = "Center Post"
         elif aspectRatio > 0.40:    #Was 0.6
             shape = "Block"
