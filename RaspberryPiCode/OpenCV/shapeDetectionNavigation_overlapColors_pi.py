@@ -335,6 +335,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     if sum(fpsTimes) >= 1:
         print("FPS:", len(fpsTimes))
+        fpsTimes = []
 
 
 # Closes all windows opened
