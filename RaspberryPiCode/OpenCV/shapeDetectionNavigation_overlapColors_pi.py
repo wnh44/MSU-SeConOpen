@@ -264,33 +264,47 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     
     # Resize frame so it can be processed quicker
     # frame = imutils.resize(frame, height=frameHeight)
+    startT = time.time()
     frame = cv2.resize(frame,(frameWidth, frameHeight))
+    print("Frame resize time:", time.time()-startT)
 
     # Convert to HSV colorspace
+    startT = time.time()
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    print("HSV convert time:", time.time()-startT)
 
     largestContourAndArea = (0,0)
 
     # Gets the places in image between the color two bounds
         # Then removes any extra small blobs
+    startT = time.time()
     masks = []
     for color in colors:
         mask = cv2.inRange(hsv, color['lower'], color['upper'])
         masks.append(mask)
+    print("Gets all masks", time.time()-startT)
 
     # Combines all masks 
     mask = masks[0]
+    startT = time.time()
     for i in range(len(masks)):
         if (i==0): continue
         mask = cv2.bitwise_or(mask, masks[i])
+    print("Combines all masks", time.time()-startT)
 
+    startT = time.time()
     largestContourAndArea = identifyAndLabelAllShapes(mask, frame)
-    objectSpecs = getObjectSpecs(largestContourAndArea[0])
+    print("Gets largest Contour", time.time()-startT)
 
-    
-    # # Outlines largest contour that is a shape or ball
+    startT = time.time()
+    objectSpecs = getObjectSpecs(largestContourAndArea[0])
+    print("Gets specs of Contour", time.time()-startT)
+
+
+    # Outlines largest contour that is a shape or ball
     if (largestContourAndArea[1] != 0):
         cv2.drawContours(frame, [largestContourAndArea[0]], -1, (0,0,0), 2)
+    
 
     # cv2.imshow('hsv', hsv)
     cv2.imshow('frame', frame)
@@ -304,6 +318,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # TODO - Change to make it only print if the position changes from left/right/center
         # - Maybe store variable with current left/right/center
 
+
+    startT = time.time()
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
@@ -323,7 +339,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 received = writeAndReadToSerial("GO right 20@") 
     else:
         print("No object detected")
-
+    print("Sends out commands center/left/right", time.time()-startT)
+    
+    startT = time.time()
     totalTime = time.time() - startTime
     fpsTimes.append(totalTime)
     # outputVideo.write(frame)
@@ -332,6 +350,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if sum(fpsTimes) >= 1:
         print("FPS:", len(fpsTimes))
         fpsTimes = []
+    print("End stuff", time.time()-startT)
+    
 
 
 # Closes all windows opened
