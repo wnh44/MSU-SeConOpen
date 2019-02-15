@@ -253,6 +253,7 @@ rawCapture = PiRGBArray(camera)
 # allow the camera to warmup
 time.sleep(1)
 
+fpsTimes = []
 
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     startTime = time.time()
@@ -270,7 +271,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # print("Blue time:", time.time()-blurStart)
 
     # Convert to HSV colorspace
-    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     largestContourAndArea = (0,0)
 
@@ -328,11 +329,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         print("No object detected")
 
     totalTime = time.time() - startTime
+    fpsTimes.append(totalTime)
     # outputVideo.write(frame)
     rawCapture.truncate(0)
 
-
-    print("Frame time: ", totalTime)
+    if sum(fpsTimes) >= 1:
+        print("FPS:", len(fpsTimes))
 
 
 # Closes all windows opened
