@@ -350,7 +350,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if sum(fpsTimes) >= 1:
         print("FPS:", len(fpsTimes))
         fpsTimes = []
-    print("End stuff", time.time()-startT)
+    print("End stuff", time.time()-startT, "\nTotal frame time: ", totalTime, "\n")
     
 
 
