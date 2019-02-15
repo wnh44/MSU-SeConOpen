@@ -38,8 +38,8 @@ g_SER.baudrate=9600
 hsv = 0
 frame = 0
 mask = 0
-frameWidth = 600
-frameHeight = 500
+frameWidth = 608
+frameHeight = 608
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
@@ -265,12 +265,6 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # Resize frame so it can be processed quicker
     # frame = imutils.resize(frame, height=frameHeight)
     frame = cv2.resize(frame,(frameWidth, frameHeight))
-
-
-    # Blur to reduce extra noise
-    # blurStart = time.time()
-    # blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-    # print("Blue time:", time.time()-blurStart)
 
     # Convert to HSV colorspace
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
