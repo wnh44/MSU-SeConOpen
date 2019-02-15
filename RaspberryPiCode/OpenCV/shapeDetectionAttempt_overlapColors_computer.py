@@ -52,7 +52,7 @@ g_upperColorRange = (baseColor[0] + baseColor[0]*percentDifference, baseColor[1]
 
 
 
-# Loads all 4 colors from JSON file
+# Loads all colors from JSON file
 def getColorsFromJSON(fileLocation):
     loadedColors = []
     with open(fileLocation, 'r') as f:
@@ -264,9 +264,10 @@ while (True):
         masks.append(mask)
 
     # Combines all masks 
-    mask = cv2.bitwise_or(masks[0], masks[1])
-    mask = cv2.bitwise_or(mask, masks[2])
-    mask = cv2.bitwise_or(mask, masks[3])
+    mask = masks[0]
+    for i in range(len(masks)):
+        if (i==0): continue
+        mask = cv2.bitwise_or(mask, masks[i])
 
     objectSpecs = getObjectSpecs(mask)
     largestContourAndArea = identifyAndLabelAllShapes(mask, frame)

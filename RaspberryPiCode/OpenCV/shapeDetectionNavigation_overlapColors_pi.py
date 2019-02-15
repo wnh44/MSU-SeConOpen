@@ -282,9 +282,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         masks.append(mask)
 
     # Combines all masks 
-    mask = cv2.bitwise_or(masks[0], masks[1])
-    mask = cv2.bitwise_or(mask, masks[2])
-    mask = cv2.bitwise_or(mask, masks[3])
+    mask = masks[0]
+    for i in range(len(masks)):
+        if (i==0): continue
+        mask = cv2.bitwise_or(mask, masks[i])
 
     largestContourAndArea = identifyAndLabelAllShapes(mask, frame)
     objectSpecs = getObjectSpecs(largestContourAndArea[0])
@@ -314,14 +315,14 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("Its in the center")
                 received = writeAndReadToSerial("GO forward 80@")
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
-            if (currentPosition != "left"):
-                currentPosition = "left"
-                print("Its on the left")
-                received = writeAndReadToSerial("GO right 25@")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             if (currentPosition != "right"):
                 currentPosition = "right"
                 print("Its on the right")
+                received = writeAndReadToSerial("GO right 25@")
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+            if (currentPosition != "left"):
+                currentPosition = "left"
+                print("Its on the left")
                 received = writeAndReadToSerial("GO left 25@") 
     else:
         print("No object detected")
