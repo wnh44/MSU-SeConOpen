@@ -93,19 +93,21 @@ def updateColorRangeWhenClick(event, x, y, flags, param):
 
 # Returns the center of object and the enclosing circle x, y and radius of object
 def getObjectSpecs(largestContour):
+    try:
+        ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
+        M = cv2.moments(largestContour)
+        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-    ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
-    M = cv2.moments(largestContour)
-    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        # Ignores object if shape is above halfway point
+        if (center[1] < frameHeight*.33):
+            return None
 
-    # Ignores object if shape is above halfway point
-    if (center[1] < frameHeight*.33):
+
+        # approxShape = detectShape(largestContour)
+        # print("Approx Shape: " + approxShape)
+        return {"center" : center, "x" : x, "y" : y,"radius" : radius}
+    except:
         return None
-
-
-    # approxShape = detectShape(largestContour)
-    # print("Approx Shape: " + approxShape)
-    return {"center" : center, "x" : x, "y" : y,"radius" : radius}
 
 
 # Loops through all contours and labels/outlines the shapes
