@@ -81,4 +81,3 @@ with open('colorCalibration.json', 'w') as f:
     f.write(output)
 
 
-camera.release()

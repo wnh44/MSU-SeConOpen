@@ -265,9 +265,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
 
     # Blur to reduce extra noise
-    blurStart = time.time()
-    blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-    print("Blue time:", time.time()-blurStart)
+    # blurStart = time.time()
+    # blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+    # print("Blue time:", time.time()-blurStart)
 
     # Convert to HSV colorspace
     hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
@@ -336,6 +336,6 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
 
 # Closes all windows opened
-camera.release()
+# camera.release()
 # outputVideo.release()
 #camera.destroyAllWindows()
