@@ -313,6 +313,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
         cv2.imwrite( "finalImage.jpg", frame)
+        received = writeAndReadToSerial("GO stop@") 
         break
 
     # TODO - Change to make it only print if the position changes from left/right/center
@@ -339,6 +340,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 received = writeAndReadToSerial("GO right 20@") 
     else:
         print("No object detected")
+        received = writeAndReadToSerial("GO stop@") 
     print("Sends out commands center/left/right", time.time()-startT)
     
     startT = time.time()
@@ -353,7 +355,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     print("End stuff", time.time()-startT, "\nTotal frame time: ", totalTime, "\n")
     
 
-
+received = writeAndReadToSerial("GO stop@") 
 # Closes all windows opened
 # camera.release()
 # outputVideo.release()
