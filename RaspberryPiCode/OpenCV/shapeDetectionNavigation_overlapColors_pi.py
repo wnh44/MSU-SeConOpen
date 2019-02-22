@@ -327,7 +327,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         # If largest object is close to bottom of screen, collect
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2 and objectSpecs['center'][0]+objectSpecs['y'] > frameHeight*0.7 and (largestContourAndAreaAndShape[2] == "Block" or largestContourAndAreaAndShape[2] == "Circle")):
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2 and objectSpecs['center'][0] > frameHeight*0.8 and (largestContourAndAreaAndShape[2] == "Block" or largestContourAndAreaAndShape[2] == "Circle")):
             print("Attempting to collect...")
             received = writeAndReadToSerial("GO forward 70@")
             time.sleep(2)
