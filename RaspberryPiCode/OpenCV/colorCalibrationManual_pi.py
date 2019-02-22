@@ -8,8 +8,8 @@ import serial
 
 
 allColors = []
-frameWidth = 600
-frameHeight = 500
+frameWidth = 300
+frameHeight = 300
 hsv = None
 
 # -------------------- Pi Stuff Setup --------------------
