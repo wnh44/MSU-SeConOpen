@@ -153,7 +153,7 @@ def identifyAndLabelAllShapes(mask, frame):
         except:
             None
 
-    return (largestContour, largestArea)
+    return (largestContour, largestArea, approxShape)
 
 # Detects the shape of the contour
 def detectShape(contour):
@@ -187,7 +187,7 @@ def detectShape(contour):
         if aspectRatio < 0.4:
             shape = "Corner Post"
         # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
-        elif area > 22000:
+        elif area > 22000 and center[0]+h/2 < frameHeight/2:
             shape = "Center Post"
         elif aspectRatio > 0.40:    #Was 0.6
             shape = "Block"
@@ -196,7 +196,7 @@ def detectShape(contour):
     # otherwise, we assume the shape is a circle
     else:
         # if (center[0]+h/2 < frameHeight/2 or area > 10000):
-        if (area > 10000):
+        if (area > 22000 and center[0]+h/2 < frameHeight/2):
             shape = "Center Post"
         else:
             shape = "Circle"
@@ -273,7 +273,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     print("HSV convert time:", time.time()-startT)
 
-    largestContourAndArea = (0,0)
+    largestContourAndAreaAndShape = (0,0,0)
 
     # Gets the places in image between the color two bounds
         # Then removes any extra small blobs
@@ -293,17 +293,20 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     print("Combines all masks", time.time()-startT)
 
     startT = time.time()
-    largestContourAndArea = identifyAndLabelAllShapes(mask, frame)
+    # Gives (contour, area)
+    largestContourAndAreaAndShape = identifyAndLabelAllShapes(mask, frame)
     print("Gets largest Contour", time.time()-startT)
 
     startT = time.time()
-    objectSpecs = getObjectSpecs(largestContourAndArea[0])
+    objectSpecs = getObjectSpecs(largestContourAndAreaAndShape[0])
     print("Gets specs of Contour", time.time()-startT)
 
+    
+    
 
     # Outlines largest contour that is a shape or ball
-    if (largestContourAndArea[1] != 0):
-        cv2.drawContours(frame, [largestContourAndArea[0]], -1, (0,0,0), 2)
+    if (largestContourAndAreaAndShape[1] != 0):
+        cv2.drawContours(frame, [largestContourAndAreaAndShape[0]], -1, (0,0,0), 2)
     
 
     # cv2.imshow('hsv', hsv)
@@ -323,7 +326,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     startT = time.time()
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+        # If largest object is close to bottom of screen, collect
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2 and objectSpecs['center'][0]+objectSpecs['y'] > frameHeight*0.7):
+            print("Attempting to collect...")
+            received = writeAndReadToSerial("GO forward 70@")
+            time.sleep(2)
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             if (currentPosition != "center"):
                 currentPosition = "center"
                 print("Its in the center")
