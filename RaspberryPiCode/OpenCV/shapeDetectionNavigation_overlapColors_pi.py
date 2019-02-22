@@ -117,6 +117,7 @@ def identifyAndLabelAllShapes(mask, frame):
 
     largestContour = None
     largestArea = 0
+    approxShape = None
 
     # Sorts contours by size
     sortedContours = sorted(contours, key=lambda x: cv2.contourArea(x))
