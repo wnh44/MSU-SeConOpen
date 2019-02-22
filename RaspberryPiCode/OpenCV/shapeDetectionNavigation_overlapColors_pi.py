@@ -268,12 +268,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     startT = time.time()
     # frame = imutils.resize(frame, height=frameHeight)
     frame = cv2.resize(frame,(frameWidth, frameHeight))
-    print("Frame resize time:", time.time()-startT)
+    # print("Frame resize time:", time.time()-startT)
 
     # Convert to HSV colorspace
     startT = time.time()
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    print("HSV convert time:", time.time()-startT)
+    # print("HSV convert time:", time.time()-startT)
 
     largestContourAndAreaAndShape = (0,0,0)
 
@@ -284,7 +284,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     for color in colors:
         mask = cv2.inRange(hsv, color['lower'], color['upper'])
         masks.append(mask)
-    print("Gets all masks", time.time()-startT)
+    # print("Gets all masks", time.time()-startT)
 
     # Combines all masks 
     mask = masks[0]
@@ -292,16 +292,16 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     for i in range(len(masks)):
         if (i==0): continue
         mask = cv2.bitwise_or(mask, masks[i])
-    print("Combines all masks", time.time()-startT)
+    # print("Combines all masks", time.time()-startT)
 
     startT = time.time()
     # Gives (contour, area)
     largestContourAndAreaAndShape = identifyAndLabelAllShapes(mask, frame)
-    print("Gets largest Contour", time.time()-startT)
+    # print("Gets largest Contour", time.time()-startT)
 
     startT = time.time()
     objectSpecs = getObjectSpecs(largestContourAndAreaAndShape[0])
-    print("Gets specs of Contour", time.time()-startT)
+    # print("Gets specs of Contour", time.time()-startT)
 
     
     # Outlines largest contour that is a shape or ball
@@ -349,7 +349,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     else:
         print("No object detected")
         received = writeAndReadToSerial("GO stop@") 
-    print("Sends out commands center/left/right", time.time()-startT)
+    # print("Sends out commands center/left/right", time.time()-startT)
     
     startT = time.time()
     totalTime = time.time() - startTime
@@ -360,7 +360,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if sum(fpsTimes) >= 1:
         print("FPS:", len(fpsTimes))
         fpsTimes = []
-    print("End stuff", time.time()-startT, "\nTotal frame time: ", totalTime, "\n")
+    # print("End stuff", time.time()-startT, "\nTotal frame time: ", totalTime, "\n")
     
 
 received = writeAndReadToSerial("GO stop@") 
