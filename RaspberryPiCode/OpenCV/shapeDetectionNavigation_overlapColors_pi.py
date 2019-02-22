@@ -128,6 +128,7 @@ def identifyAndLabelAllShapes(mask, frame):
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             M = cv2.moments(contour)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            approxShape = None
             
             # Only uses object if below halfway
             if (center[1] > frameHeight*.33):
@@ -325,7 +326,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         # If largest object is close to bottom of screen, collect
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2 and objectSpecs['center'][0]+objectSpecs['y'] > frameHeight*0.7):
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2 and objectSpecs['center'][0]+objectSpecs['y'] > frameHeight*0.7 and (largestContourAndAreaAndShape[2] == "Block" or largestContourAndAreaAndShape[2] == "Circle")):
             print("Attempting to collect...")
             received = writeAndReadToSerial("GO forward 70@")
             time.sleep(2)
