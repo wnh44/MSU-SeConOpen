@@ -327,11 +327,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         # If largest object is close to bottom of screen, collect
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2 and objectSpecs['center'][0] > frameHeight*0.8 and (largestContourAndAreaAndShape[2] == "Block" or largestContourAndAreaAndShape[2] == "Circle")):
+        print("Y pos: " , objectSpecs["center"][1], "Frame height: " , frameHeight, "Frame height*0.8", frameHeight*0.8)
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*0.5)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*0.5)) >= frameWidth/2 and objectSpecs['center'][1] > frameHeight*0.9):
             print("Attempting to collect...")
             received = writeAndReadToSerial("GO forward 70@")
-            time.sleep(2)
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+            time.sleep(4)
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*0.5)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*0.5)) >= frameWidth/2):
             if (currentPosition != "center"):
                 currentPosition = "center"
                 print("Its in the center")
