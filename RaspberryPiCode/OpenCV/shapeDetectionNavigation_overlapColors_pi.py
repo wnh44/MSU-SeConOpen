@@ -38,8 +38,8 @@ g_SER.baudrate=9600
 hsv = 0
 frame = 0
 mask = 0
-frameWidth = 608
-frameHeight = 608
+frameWidth = 300
+frameHeight = 300
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
@@ -263,8 +263,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     
     # Resize frame so it can be processed quicker
-    # frame = imutils.resize(frame, height=frameHeight)
     startT = time.time()
+    # frame = imutils.resize(frame, height=frameHeight)
     frame = cv2.resize(frame,(frameWidth, frameHeight))
     print("Frame resize time:", time.time()-startT)
 
@@ -302,8 +302,6 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     print("Gets specs of Contour", time.time()-startT)
 
     
-    
-
     # Outlines largest contour that is a shape or ball
     if (largestContourAndAreaAndShape[1] != 0):
         cv2.drawContours(frame, [largestContourAndAreaAndShape[0]], -1, (0,0,0), 2)
