@@ -349,8 +349,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("Its on the right")
                 received = writeAndReadToSerial("GO right 20@") 
     else:
-        print("No object detected")
-        received = writeAndReadToSerial("GO stop@") 
+        print("No object detected...spinning")
+        # received = writeAndReadToSerial("GO stop@") 
+        received = writeAndReadToSerial("GO left 15@")
     # print("Sends out commands center/left/right", time.time()-startT)
     
     startT = time.time()
