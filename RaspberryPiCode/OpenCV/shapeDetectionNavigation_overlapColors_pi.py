@@ -41,6 +41,9 @@ mask = 0
 frameWidth = 300
 frameHeight = 300
 
+# Keeps track of time conveyor has been running
+conveyorTimer = 0
+
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
 # outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('D','I','V','X'), 20.0, (int(camera.get(3)),int(camera.get(4))))
@@ -333,6 +336,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
             print("Attempting to collect...")
             received = writeAndReadToSerial("GO forward 70@")
             time.sleep(4)
+            received = writeAndReadToSerial("conveyor start@")
+            conveyorTimer = time.time()
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2):
             if (currentPosition != "center"):
                 currentPosition = "center"
@@ -359,6 +364,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     fpsTimes.append(totalTime)
     # outputVideo.write(frame)
     rawCapture.truncate(0)
+
+    if (time.time() - conveyorTime > 9.5):
+        received = writeAndReadToSerial("conveyor stop@")
+
 
     if sum(fpsTimes) >= 1:
         print("FPS:", len(fpsTimes))
