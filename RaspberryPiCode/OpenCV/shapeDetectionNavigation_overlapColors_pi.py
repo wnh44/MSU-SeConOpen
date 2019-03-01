@@ -42,7 +42,7 @@ frameWidth = 300
 frameHeight = 300
 
 # Keeps track of time conveyor has been running
-conveyorTimer = 0
+conveyorTime = 0
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
@@ -337,7 +337,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
             received = writeAndReadToSerial("GO forward 70@")
             time.sleep(4)
             received = writeAndReadToSerial("conveyor start@")
-            conveyorTimer = time.time()
+            conveyorTime = time.time()
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2):
             if (currentPosition != "center"):
                 currentPosition = "center"
