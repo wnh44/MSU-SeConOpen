@@ -6,7 +6,8 @@ Secon Pi
 	Wifi: msu3
 	Password: bulldogs
 
-	Current IP: 10.13.20.5 (As of 10-5-18)
+	Current IP: Pi2 10.13.21.69			Pi3: 10.13.20.5 (As of 10-5-18) (DEAD)
+
         - getCurrentIP.py should run at startup each time and update the link below with its IP
 
     To ssh into pi, you must be registered for msu3. Get setup with the link below

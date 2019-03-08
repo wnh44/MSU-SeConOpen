@@ -141,7 +141,7 @@ ISR(TIMER1_COMPA_vect)
     if(motorRunning == true)
     {
         stalled = true;
-        Serial.println("Stalled");
+        // Serial.println("Stalled");
     }
 }
 // Pin Interupt
@@ -179,7 +179,7 @@ void setupInterrupts()
 }
 void releaseMotor()
 {
-    Serial.println("Stopping");
+    // Serial.println("Stopping");
     stalled = false;
     motorRunning = false;
     // Ensure timers are on
@@ -237,7 +237,7 @@ void setup() {
 
   
   conveyorMotorShield.begin();
-  setupInterrupts();
+//  setupInterrupts();
   
   // Weird glitch, wont turn later on if dont do this to activate motors???
   motors->turnRight(twist, 100);

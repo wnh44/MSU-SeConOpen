@@ -26,3 +26,6 @@ X - Make calibration program to read colors
 New FIX:
     Search for all colors, once it gets largest contour, only filter for that color and track it 
     down and once it thinks its a center post, rin forward for x number of seconds
+
+CONNECTION WITHOUT NETWORK:
+    - Try connecting directly with ethernet, hostname is 'raspberrypi.local' port 22
