@@ -28,8 +28,8 @@ motorController::motorController(int shieldAddress, int numberOfWheels){
 // Sets up just 2 motors
 void motorController::setupTwoWheels(){
     // Grabs all 4 motors
-    leftMotor = motorShield.getMotor(1);
-    rightMotor = motorShield.getMotor(2);
+    leftMotor = motorShield.getMotor(3);
+    rightMotor = motorShield.getMotor(4);
 
     // Adds them all to array to loop over
     activeMotors[0] = leftMotor;

@@ -281,8 +281,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     largestContourAndAreaAndShape = (0,0,0)
 
-    # Gets the places in image between the color two bounds
-        # Then removes any extra small blobs
+    # Gets mask for each color
     startT = time.time()
     masks = []
     for color in colors:
