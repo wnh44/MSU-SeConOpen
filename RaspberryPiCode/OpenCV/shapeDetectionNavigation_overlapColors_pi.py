@@ -263,10 +263,10 @@ def getCornerPosts(mask):
 def getSpecificCornerPost(cornerPostsSpecs, masks, colorIndex):
     desiredCornerPostSpecs = None
 
-    mask = mask[colorIndex]
+    mask = masks[colorIndex]
 
     for specs in cornerPostsSpecs:
-        value = mask[colorIndex][specs["y"], specs["x"]]
+        value = mask[specs["y"], specs["x"]]
         print("Value of mask", colorIndex, " is", value, "at", specs['y'], specs['x'])
         if (value == 255):
             print("Color is on corner post positions:", specs)
