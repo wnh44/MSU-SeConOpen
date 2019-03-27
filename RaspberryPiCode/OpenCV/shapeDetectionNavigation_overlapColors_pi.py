@@ -180,12 +180,12 @@ def detectShape(contour):
     area = cv2.contourArea(contour)
 
     # if the shape is a triangle, it will have 3 vertices
-    if len(approx) == 3:
-        shape = "triangle"
+    # if len(approx) == 3:
+    #     shape = "triangle"
 
     # if the shape has 4 vertices, it is either a square or
     # a rectangle
-    elif len(approx) == 4:
+    elif len(approx) =< 4:
         # compute the bounding box of the contour and use the
         # bounding box to compute the aspect ratio
         (x, y, w, h) = cv2.boundingRect(approx)
