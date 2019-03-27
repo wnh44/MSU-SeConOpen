@@ -235,7 +235,7 @@ def getCornerPosts(mask, frame):
             approxShape = None
             
             # Only uses object if above top third
-            if (center[1] < frameHeight*.5):
+            if (center[1] < frameHeight*.6):
                 approxShape, aspectRatio = detectShape(contour)
                 area = cv2.contourArea(contour)
                 specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
@@ -273,7 +273,7 @@ def getSpecificCornerPost(cornerPostsSpecs, masks, colorIndex):
             if (specs == None):
                 continue
 
-            value = mask[specs["y"], specs["x"]]
+            value = mask[specs["center"][1], specs["center"][0]]
             print("Value of mask", colorIndex, " is", value, "at", specs['y'], specs['x'])
             if (value == 255):
                 print("Color is on corner post positions:", specs)
