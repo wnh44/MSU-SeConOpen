@@ -214,7 +214,7 @@ def detectShape(contour):
     return shape, aspectRatio
 
 # Gets corner post
-def getCornerPosts(mask):
+def getCornerPosts(mask, frame):
     # Gets and sorts contours
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = cnts[0] if imutils.is_cv2() else cnts[1]
@@ -390,7 +390,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # If we want to go home, look are corner posts
     else:
-        allVisibleCornerPosts = getCornerPosts(mask)
+        allVisibleCornerPosts = getCornerPosts(mask, frame)
         desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, 0)
         objectSpecs = desiredCornerPost
 
