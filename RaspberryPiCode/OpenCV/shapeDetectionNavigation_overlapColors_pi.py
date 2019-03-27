@@ -185,7 +185,7 @@ def detectShape(contour):
 
     # if the shape has 4 vertices, it is either a square or
     # a rectangle
-    elif len(approx) =< 4:
+    elif len(approx) < 5:
         # compute the bounding box of the contour and use the
         # bounding box to compute the aspect ratio
         (x, y, w, h) = cv2.boundingRect(approx)
