@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 Adafruit_MotorShield conveyorMotorShield = Adafruit_MotorShield(0x60); //Sheild address
-Adafruit_DCMotor *conveyorMotor = conveyorMotorShield.getMotor(3); // DC motor on M3
+Adafruit_DCMotor *conveyorMotor = conveyorMotorShield.getMotor(2); // DC motor on M2
 
 bool motorRunning = false;
 bool stalled = false;
@@ -202,7 +202,7 @@ void releaseMotor()
 }
 void startMotor(int speed)
 {
-    Serial.println("Starting");
+    // Serial.println("Starting");
     // Turn off interrupts
     cli();
     // Ensure stall timer is at 0

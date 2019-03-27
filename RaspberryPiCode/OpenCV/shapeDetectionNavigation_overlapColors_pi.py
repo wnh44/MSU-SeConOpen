@@ -45,6 +45,9 @@ frameHeight = 300
 conveyorTime = 0
 conveyorRunning = False
 
+# If true, it looks for corner posts and goes home
+goHome = True
+
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
 # outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('D','I','V','X'), 20.0, (int(camera.get(3)),int(camera.get(4))))
@@ -210,6 +213,70 @@ def detectShape(contour):
     # return the name of the shape
     return shape, aspectRatio
 
+# Gets corner post
+def getCornerPosts(mask):
+    # Gets and sorts contours
+    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = cnts[0] if imutils.is_cv2() else cnts[1]
+
+    # Sorts contours by size
+    sortedContours = sorted(contours, key=lambda x: cv2.contourArea(x))
+    sortedContours.reverse()
+
+    # All Corner Posts
+    cornerPosts = []
+
+        # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
+    for contour in sortedContours[:8]:
+        try:
+            ((x, y), radius) = cv2.minEnclosingCircle(contour)
+            M = cv2.moments(contour)
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            approxShape = None
+            
+            # Only uses object if above top third
+            if (center[1] < frameHeight*.33):
+                approxShape, aspectRatio = detectShape(contour)
+                area = cv2.contourArea(contour)
+                specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
+
+                # If area of object is less than amount, ignore it, probably an artifcat
+                if (area < 75):
+                    continue
+
+                cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                cv2.putText(frame, str(area)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
+                # cv2.putText(frame, str(aspectRatio)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
+
+                if (approxShape == "Corner Post"):
+                    cornerPosts.append(specs)
+                
+        except:
+            None
+
+    return cornerPosts
+
+# Returns specs of desired color corner post
+    # Given specs of all corner posts from getCornerPosts(), all masks, and color number
+    # If color isn't found, get next best one - TODO
+def getSpecificCornerPost(cornerPostsSpecs, masks, colorIndex):
+    desiredCornerPostSpecs = None
+
+    mask = mask[colorIndex]
+
+    for specs in cornerPostsSpecs:
+        value = mask[colorIndex][specs["y"], specs["x"]]
+        print("Value of mask", colorIndex, " is", value, "at", specs['y'], specs['x'])
+        if (value == 255):
+            print("Color is on corner post positions:", specs)
+            desiredCornerPostSpecs = specs
+    
+    return desiredCornerPostSpecs
+
+
+
+
 # Reads from serial, returns the text
 def readFromSerial():
 	dataReceived = g_SER.readline()
@@ -297,20 +364,31 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         mask = cv2.bitwise_or(mask, masks[i])
     # print("Combines all masks", time.time()-startT)
 
-    startT = time.time()
-    # Gives (contour, area)
-    largestContourAndAreaAndShape = identifyAndLabelAllShapes(mask, frame)
-    # print("Gets largest Contour", time.time()-startT)
+    # If we are just getting balls
+    if (not goHome):
+        startT = time.time()
+        # Gives (contour, area)
+        largestContourAndAreaAndShape = identifyAndLabelAllShapes(mask, frame)
+        # print("Gets largest Contour", time.time()-startT)
 
-    startT = time.time()
-    objectSpecs = getObjectSpecs(largestContourAndAreaAndShape[0])
-    # print("Gets specs of Contour", time.time()-startT)
+        startT = time.time()
+        objectSpecs = getObjectSpecs(largestContourAndAreaAndShape[0])
+        # print("Gets specs of Contour", time.time()-startT)
 
+        # Outlines largest contour that is a shape or ball
+        if (largestContourAndAreaAndShape[1] != 0):
+            cv2.drawContours(frame, [largestContourAndAreaAndShape[0]], -1, (0,0,0), 2)
     
-    # Outlines largest contour that is a shape or ball
-    if (largestContourAndAreaAndShape[1] != 0):
-        cv2.drawContours(frame, [largestContourAndAreaAndShape[0]], -1, (0,0,0), 2)
-    
+
+    # If we want to go home, look are corner posts
+    else:
+        allVisibleCornerPosts = getCornerPosts(mask)
+        desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, 0)
+        objectSpecs = desiredCornerPost
+
+        if (objectSpecs != None):
+             print("Found corner post")
+
 
     # cv2.imshow('hsv', hsv)
     cv2.imshow('frame', frame)

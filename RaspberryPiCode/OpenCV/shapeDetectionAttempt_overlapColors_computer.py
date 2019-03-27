@@ -83,10 +83,13 @@ def updateColorRangeWhenClick(event, x, y, flags, param):
 
 # Returns the center of object and the enclosing circle x, y and radius of object
 def getObjectSpecs(largestContour):
+    try:
+        ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
+        M = cv2.moments(largestContour)
+        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    except:
+        return None
 
-    ((x, y), radius) = cv2.minEnclosingCircle(largestContour)
-    M = cv2.moments(largestContour)
-    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
     # Ignores object if shape is above halfway point
     if (center[1] < frameHeight*.33):
@@ -252,6 +255,9 @@ while (True):
         mask = cv2.inRange(hsv, color['lower'], color['upper'])
         masks.append(mask)
 
+    # for mask_ in masks:
+    #     print("Mask: at 300 300", mask_[480,300])
+    
     # Combines all masks 
     mask = masks[0]
     for i in range(len(masks)):
