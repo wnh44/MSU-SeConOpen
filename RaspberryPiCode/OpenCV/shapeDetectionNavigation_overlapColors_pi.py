@@ -246,7 +246,7 @@ def getCornerPosts(mask, frame):
                 specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
                 # If object is over 2/3 of screen height, you've found it
-                if (specs['radius']*2 > frameHeight*2/3 and specs['center'][0] > 100 and specs['center'][1] < 200):
+                if (specs['radius']*2 > frameHeight*2/3 and specs['center'][0] > 100 and specs['center'][0] < 200):
                     specs['arrived'] = True
                 else:
                     specs['arrived'] = False
