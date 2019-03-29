@@ -334,7 +334,7 @@ def navigate(objectSpecs, goHome=False):
         spinSpeed = "25"
     elif (goHome):
         straightSpeed = "100"
-        turnSpeed = "25"
+        turnSpeed = "20"
         spinSpeed = "50"
 
     if (objectSpecs != None):
