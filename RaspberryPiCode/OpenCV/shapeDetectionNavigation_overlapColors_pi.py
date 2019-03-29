@@ -472,6 +472,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
             print("Found corner post")
             # Checks timer
+        else:
             if (cornerPostSearchTimer == 0):
                 cornerPostSearchTimer = time.time()
                 colorIndexToLookFor = 0
