@@ -365,8 +365,9 @@ def navigate(objectSpecs, goHome=False):
                 print("Its on the right")
                 received = writeAndReadToSerial("GO right " + turnSpeed +"@") 
     else:
-        # print("No object detected...spinning")
+        print("No object detected...spinning")
         # received = writeAndReadToSerial("GO stop@") 
+        currentPosition = "spinning"
         received = writeAndReadToSerial("GO left " + spinSpeed + "@")
 
 
