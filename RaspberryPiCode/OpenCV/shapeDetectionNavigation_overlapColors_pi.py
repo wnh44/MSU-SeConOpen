@@ -460,6 +460,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         # Adjust desired color based on time
         if (objectSpecs != None):
             if (objectSpecs['arrived'] == True and colorIndexToLookFor == 0):
+                print("FINAL PUSH HOME!")
+                received = writeAndReadToSerial("GO forward 100@")
+                time.sleep(4)
                 print("You have reached your destination")
                 break
             elif (objectSpecs['arrived'] == True and colorIndexToLookFor != 0):
