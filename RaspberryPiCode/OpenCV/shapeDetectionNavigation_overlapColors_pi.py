@@ -47,6 +47,11 @@ conveyorRunning = False
 
 # If true, it looks for corner posts and goes home
 goHome = True
+cornerPostSearchTimer = 0
+colorIndexToLookFor = 0
+
+# Overall time
+overallTime = time.time()
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
@@ -240,6 +245,12 @@ def getCornerPosts(mask, frame):
                 area = cv2.contourArea(contour)
                 specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
+                # If object is over 2/3 of screen height, you've found it
+                if (specs['radius']*2 > frameHeight*2/3):
+                    specs['arrived'] = True
+                else:
+                    specs['arrived'] = False
+
                 # If area of object is less than amount, ignore it, probably an artifcat
                 if (area < 75):
                     continue
@@ -314,6 +325,54 @@ def writeAndReadToSerial(dataToSend):
     dataReceived = readFromSerial()
     return dataReceived
 
+# Navigates the robot
+def navigate(objectSpecs, goHome=false):
+    if (not goHome):
+        straightSpeed = "70"
+        turnSpeed = "20"
+        spinSpeed = "25"
+    elif (goHome):
+        straightSpeed = "100"
+        turnSpeed = "25"
+        spinSpeed = "40"
+
+    if (objectSpecs != None):
+        # Tells if object is left, right, or center of screen
+        # If largest object is close to bottom of screen, collect
+        sideThreshold = 0.75
+        # print("Y pos: " , objectSpecs["center"][1], "Frame height: " , frameHeight, "Frame height*0.8", frameHeight*0.8)
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2 and objectSpecs['center'][1] > frameHeight*0.9):
+            print("Attempting to collect...")
+            received = writeAndReadToSerial("GO forward " + straightSpeed +"@")
+            time.sleep(4)
+            received = writeAndReadToSerial("conveyor start@")
+            conveyorTime = time.time()
+            conveyorRunning = True
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2):
+            if (currentPosition != "center"):
+                currentPosition = "center"
+                print("Its in the center")
+                received = writeAndReadToSerial("GO forward " + straightSpeed +"@")
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
+            if (currentPosition != "left"):
+                currentPosition = "left"
+                print("Its on the left")
+                received = writeAndReadToSerial("GO left " + turnSpeed + "@")
+        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
+            if (currentPosition != "right"):
+                currentPosition = "right"
+                print("Its on the right")
+                received = writeAndReadToSerial("GO right " + turnSpeed +"@") 
+    else:
+        print("No object detected...spinning")
+        # received = writeAndReadToSerial("GO stop@") 
+        received = writeAndReadToSerial("GO left " + spinSpeed + "@")
+
+
+
+
+
+
 # Names the windows
 # cv2.namedWindow("mask")
 cv2.namedWindow("frame")
@@ -336,12 +395,15 @@ rawCapture = PiRGBArray(camera)
 
 # allow the camera to warmup
 time.sleep(1)
-
 fpsTimes = []
 
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     startTime = time.time()
     frame = frame.array
+
+    # After 120 mins, go home
+    if (time.time() - overallTime > 120):
+        goHome = True
 
     
     # Resize frame so it can be processed quicker
@@ -388,15 +450,31 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         if (largestContourAndAreaAndShape[1] != 0):
             cv2.drawContours(frame, [largestContourAndAreaAndShape[0]], -1, (0,0,0), 2)
     
-
     # If we want to go home, look are corner posts
     else:
         allVisibleCornerPosts = getCornerPosts(mask, frame)
-        desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, 0)
+        desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, colorIndexToLookFor)
         objectSpecs = desiredCornerPost
 
+        if (objectSpecs['arrived'] == True and colorIndexToLookFor == 0):
+            print("You have reached your destination")
+            break
+        elif (objectSpecs['arrived'] == True and colorIndexToLookFor != 0):
+            colorIndexToLookFor -= 1 # Look for next obj
+            cornerPostSearchTimer = colorIndexToLookFor*10 # Decrease 10 seconds from total timer
+
+        # Adjust desired color based on time
         if (objectSpecs != None):
-             print("Found corner post")
+            print("Found corner post")
+            # Checks timer
+            if (cornerPostSearchTimer == 0):
+                cornerPostSearchTimer = time.time()
+                colorIndexToLookFor = 0
+            elif (time.time() - colorIndexToLookFor > 20):
+                colorIndexToLookFor = 2
+            elif (time.time() - cornerPostSearchTimer > 10):
+                colorIndexToLookFor = 1
+        
 
 
     # cv2.imshow('hsv', hsv)
@@ -409,42 +487,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         received = writeAndReadToSerial("GO stop@") 
         break
 
-    # TODO - Change to make it only print if the position changes from left/right/center
-        # - Maybe store variable with current left/right/center
-
-
+    # Navigates to object
     startT = time.time()
-    if (objectSpecs != None):
-        # Tells if object is left, right, or center of screen
-        # If largest object is close to bottom of screen, collect
-        sideThreshold = 0.75
-        # print("Y pos: " , objectSpecs["center"][1], "Frame height: " , frameHeight, "Frame height*0.8", frameHeight*0.8)
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2 and objectSpecs['center'][1] > frameHeight*0.9):
-            print("Attempting to collect...")
-            received = writeAndReadToSerial("GO forward 70@")
-            time.sleep(4)
-            received = writeAndReadToSerial("conveyor start@")
-            conveyorTime = time.time()
-            conveyorRunning = True
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2):
-            if (currentPosition != "center"):
-                currentPosition = "center"
-                print("Its in the center")
-                received = writeAndReadToSerial("GO forward 70@")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
-            if (currentPosition != "left"):
-                currentPosition = "left"
-                print("Its on the left")
-                received = writeAndReadToSerial("GO left 20@")
-        elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
-            if (currentPosition != "right"):
-                currentPosition = "right"
-                print("Its on the right")
-                received = writeAndReadToSerial("GO right 20@") 
-    else:
-        print("No object detected...spinning")
-        # received = writeAndReadToSerial("GO stop@") 
-        received = writeAndReadToSerial("GO left 25@")
+    navigate(objectSpecs, goHome)
+
     # print("Sends out commands center/left/right", time.time()-startT)
     
     startT = time.time()
