@@ -326,7 +326,7 @@ def writeAndReadToSerial(dataToSend):
     return dataReceived
 
 # Navigates the robot
-def navigate(objectSpecs, goHome=false):
+def navigate(objectSpecs, goHome=False):
     if (not goHome):
         straightSpeed = "70"
         turnSpeed = "20"
