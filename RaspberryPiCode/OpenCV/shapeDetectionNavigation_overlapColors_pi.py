@@ -327,6 +327,7 @@ def writeAndReadToSerial(dataToSend):
 
 # Navigates the robot
 def navigate(objectSpecs, goHome=False):
+    global currentPosition
     if (not goHome):
         straightSpeed = "70"
         turnSpeed = "20"
@@ -334,7 +335,7 @@ def navigate(objectSpecs, goHome=False):
     elif (goHome):
         straightSpeed = "100"
         turnSpeed = "25"
-        spinSpeed = "40"
+        spinSpeed = "50"
 
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
