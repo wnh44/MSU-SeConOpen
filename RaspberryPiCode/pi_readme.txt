@@ -14,6 +14,8 @@ Secon Pi
         - https://w.msstate.edu/feeds/its/msu3/
 		- ssh pi@lastestIp		# The password is the one given above (secon2018)
 
+	- Ethernet connection: pi@raspberrypi.local
+
 
 	Get Latest Address: https://pbell97.pythonanywhere.com/piIP/
 	Setup Serial: https://maker.pro/raspberry-pi/tutorial/how-to-connect-and-interface-raspberry-pi-with-arduino
