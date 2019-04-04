@@ -253,7 +253,7 @@ def getCornerPosts(mask, frame):
                     specs['arrived'] = False
 
                 # If object is over 1/2 of screen height, for use with non primary corner post navigation
-                if (specs['radius']*2 > frameHeight*2/2 and specs['center'][0] > 80 and specs['center'][0] < 220):
+                if (specs['radius']*2 > frameHeight*2/2 ): #and specs['center'][0] > 80 and specs['center'][0] < 220):
                     specs['closeEnough'] = True
                 else:
                     specs['closeEnough'] = False
@@ -334,7 +334,7 @@ def writeAndReadToSerial(dataToSend):
     return dataReceived
 
 # Navigates the robot
-def navigate(objectSpecs, goHome=False):
+def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
     global currentPosition
     if (not goHome):
         straightSpeed = "70"
@@ -345,10 +345,16 @@ def navigate(objectSpecs, goHome=False):
         turnSpeed = "20"
         spinSpeed = "50"
 
+    # Side threshold, less picky for navigating to secondary corner posts
+    if (chillSideThreshold):
+        sideThreshold = 1.0
+    else:
+        sideThreshold = 0.75
+
+    # Navigates
     if (objectSpecs != None):
         # Tells if object is left, right, or center of screen
         # If largest object is close to bottom of screen, collect
-        sideThreshold = 0.75
         # print("Y pos: " , objectSpecs["center"][1], "Frame height: " , frameHeight, "Frame height*0.8", frameHeight*0.8)
         if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2 and objectSpecs['center'][1] > frameHeight*0.9):
             print("Attempting to collect...")
@@ -512,7 +518,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Navigates to object
     startT = time.time()
-    navigate(objectSpecs, goHome)
+    if (goHome and colorIndexToLookFor != 0):
+        chillThreshold = True
+    else:
+        chillThreshold = False
+
+    navigate(objectSpecs, goHome, chillSideThreshold)
 
     # print("Sends out commands center/left/right", time.time()-startT)
     
