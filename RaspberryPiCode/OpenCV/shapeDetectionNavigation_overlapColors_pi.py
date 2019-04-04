@@ -49,6 +49,7 @@ conveyorRunning = False
 goHome = True
 cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
+framesWithoutCornerPost = 0
 
 # Overall time
 overallTime = time.time()
@@ -468,22 +469,28 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 break
             elif (objectSpecs['arrived'] == True and colorIndexToLookFor != 0):
                 colorIndexToLookFor -= 1 # Look for next obj
-                cornerPostSearchTimer = colorIndexToLookFor*10 # Decrease 10 seconds from total timer
+                # cornerPostSearchTimer = colorIndexToLookFor*10 # Decrease 10 seconds from total timer
+                framesWithoutCornerPost = 0
 
             print("Found corner post")
             # Checks timer
         else:
-            if (cornerPostSearchTimer == 0):
-                cornerPostSearchTimer = time.time()
+            # Change this to frames??????
+            # if (cornerPostSearchTimer == 0):
+            if (framesWithoutCornerPost == 0):
+                # cornerPostSearchTimer = time.time()
                 colorIndexToLookFor = 0
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
-            elif (time.time() - cornerPostSearchTimer > 30):
+            # elif (time.time() - cornerPostSearchTimer > 30):
+            elif (framesWithoutCornerPost > 550):
                 colorIndexToLookFor = 2
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
-            elif (time.time() - cornerPostSearchTimer > 20):
+            # elif (time.time() - cornerPostSearchTimer > 20):
+            elif (framesWithoutCornerPost > 225):
                 colorIndexToLookFor = 1
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
-        
+            framesWithoutCornerPost += 1
+
 
 
     # cv2.imshow('hsv', hsv)
