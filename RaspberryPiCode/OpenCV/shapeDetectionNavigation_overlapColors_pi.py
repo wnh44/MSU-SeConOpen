@@ -489,11 +489,11 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 colorIndexToLookFor = 0
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
             # elif (time.time() - cornerPostSearchTimer > 30):
-            elif (framesWithoutCornerPost > 550):
+            elif (framesWithoutCornerPost > 300):
                 colorIndexToLookFor = 2
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
             # elif (time.time() - cornerPostSearchTimer > 20):
-            elif (framesWithoutCornerPost > 225):
+            elif (framesWithoutCornerPost > 150):
                 colorIndexToLookFor = 1
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
             framesWithoutCornerPost += 1
