@@ -46,7 +46,7 @@ conveyorTime = 0
 conveyorRunning = False
 
 # If true, it looks for corner posts and goes home
-goHome = True
+goHome = False
 cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
@@ -417,8 +417,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     startTime = time.time()
     frame = frame.array
 
-    # After 120 mins, go home
-    if (time.time() - overallTime > 120):
+    # After 120 seconds, go home
+    if (time.time() - overallTime > 60):
         goHome = True
 
     
