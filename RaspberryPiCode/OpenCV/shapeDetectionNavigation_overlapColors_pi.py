@@ -252,6 +252,13 @@ def getCornerPosts(mask, frame):
                 else:
                     specs['arrived'] = False
 
+                # If object is over 1/2 of screen height, for use with non primary corner post navigation
+                if (specs['radius']*2 > frameHeight*2/2 and specs['center'][0] > 80 and specs['center'][0] < 220):
+                    specs['closeEnough'] = True
+                else:
+                    specs['closeEnough'] = False
+
+
                 # If area of object is less than amount, ignore it, probably an artifcat
                 if (area < 75):
                     continue
@@ -286,9 +293,9 @@ def getSpecificCornerPost(cornerPostsSpecs, masks, colorIndex):
                 continue
 
             value = mask[specs["center"][1], specs["center"][0]]
-            print("Value of mask", colorIndex, " is", value, "at", specs['y'], specs['x'])
+            # print("Value of mask", colorIndex, " is", value, "at", specs['y'], specs['x'])
             if (value == 255):
-                print("Color is on corner post positions:", specs)
+                # print("Color is on corner post positions:", specs)
                 desiredCornerPostSpecs = specs
         except:
             continue
@@ -461,19 +468,19 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
         # Adjust desired color based on time
         if (objectSpecs != None):
-            if (objectSpecs['arrived'] == True and colorIndexToLookFor == 0):
+            if (colorIndexToLookFor == 0 and objectSpecs['arrived'] == True):
                 print("FINAL PUSH HOME!")
                 received = writeAndReadToSerial("GO forward 100@")
                 time.sleep(4)
                 print("You have reached your destination")
                 break
-            elif (objectSpecs['arrived'] == True and colorIndexToLookFor != 0):
-                # colorIndexToLookFor -= 1 # Look for next obj
+            elif (colorIndexToLookFor != 0 and objectSpecs['closeEnough'] == True):
+                colorIndexToLookFor -= 1 # Look for next obj
                 # cornerPostSearchTimer = colorIndexToLookFor*10 # Decrease 10 seconds from total timer
                 framesWithoutCornerPost = 0 #This will also resest colorIndex to look for
 
             print("Found corner post")
-            # Checks timer
+        # Checks timer
         else:
             # Change this to frames??????
             # if (cornerPostSearchTimer == 0):
