@@ -253,7 +253,7 @@ def getCornerPosts(mask, frame):
                     specs['arrived'] = False
 
                 # If object is over 1/2 of screen height, for use with non primary corner post navigation
-                if (specs['radius']*2 > frameHeight*2/2 ): #and specs['center'][0] > 80 and specs['center'][0] < 220):
+                if (specs['radius']*2 > frameHeight*1/2 ): #and specs['center'][0] > 80 and specs['center'][0] < 220):
                     specs['closeEnough'] = True
                 else:
                     specs['closeEnough'] = False
@@ -481,6 +481,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("You have reached your destination")
                 break
             elif (colorIndexToLookFor != 0 and objectSpecs['closeEnough'] == True):
+                print ("CORNER POST IS CLOSE ENOUGH, LOOKING FOR PRIMARY ONE NOW")
                 colorIndexToLookFor -= 1 # Look for next obj
                 # cornerPostSearchTimer = colorIndexToLookFor*10 # Decrease 10 seconds from total timer
                 framesWithoutCornerPost = 0 #This will also resest colorIndex to look for
