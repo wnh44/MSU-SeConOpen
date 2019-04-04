@@ -252,8 +252,8 @@ def getCornerPosts(mask, frame):
                 else:
                     specs['arrived'] = False
 
-                # If object is over 1/2 of screen height, for use with non primary corner post navigation
-                if (specs['radius']*2 > frameHeight*1/2 ): #and specs['center'][0] > 80 and specs['center'][0] < 220):
+                # If object is over 1/3 of screen height, for use with non primary corner post navigation
+                if (specs['radius']*2 > frameHeight*1/3 ): #and specs['center'][0] > 80 and specs['center'][0] < 220):
                     specs['closeEnough'] = True
                 else:
                     specs['closeEnough'] = False
@@ -347,7 +347,7 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
 
     # Side threshold, less picky for navigating to secondary corner posts
     if (chillSideThreshold):
-        sideThreshold = 1.0
+        sideThreshold = 1.1
     else:
         sideThreshold = 0.75
 
@@ -496,7 +496,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 colorIndexToLookFor = 0
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
             # elif (time.time() - cornerPostSearchTimer > 30):
-            elif (framesWithoutCornerPost > 250):
+            elif (framesWithoutCornerPost > 280):
                 colorIndexToLookFor = 2
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
             # elif (time.time() - cornerPostSearchTimer > 20):
