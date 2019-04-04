@@ -468,9 +468,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("You have reached your destination")
                 break
             elif (objectSpecs['arrived'] == True and colorIndexToLookFor != 0):
-                colorIndexToLookFor -= 1 # Look for next obj
+                # colorIndexToLookFor -= 1 # Look for next obj
                 # cornerPostSearchTimer = colorIndexToLookFor*10 # Decrease 10 seconds from total timer
-                framesWithoutCornerPost = 0
+                framesWithoutCornerPost = 0 #This will also resest colorIndex to look for
 
             print("Found corner post")
             # Checks timer
