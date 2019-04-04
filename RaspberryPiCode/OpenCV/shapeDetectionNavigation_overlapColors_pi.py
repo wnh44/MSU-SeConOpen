@@ -523,7 +523,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     else:
         chillThreshold = False
 
-    navigate(objectSpecs, goHome, chillSideThreshold)
+    navigate(objectSpecs, goHome, chillThreshold)
 
     # print("Sends out commands center/left/right", time.time()-startT)
     
