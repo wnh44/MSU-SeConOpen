@@ -67,7 +67,7 @@ else:
 
 g_lowerColorRange = (0,0,0)
 g_upperColorRange = (0,0,0)
-percentDifference = 0.4
+percentDifference = 0.5
 
 # Sets up color ranges based on base given color
 g_lowerColorRange = (baseColor[0] - baseColor[0]*percentDifference, baseColor[1] - baseColor[1]*percentDifference, baseColor[2] - baseColor[2]*percentDifference)
