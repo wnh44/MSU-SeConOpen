@@ -387,7 +387,7 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
 
 
 # Names the windows
-# cv2.namedWindow("mask")
+cv2.namedWindow("mask")
 cv2.namedWindow("frame")
 # cv2.namedWindow("hsv")
 # cv2.setMouseCallback("frame", updateColorRangeWhenClick)
@@ -505,6 +505,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Displays video feed
     cv2.imshow('frame', frame)
+    cv2.imshow('mask', mask)
 
     # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
