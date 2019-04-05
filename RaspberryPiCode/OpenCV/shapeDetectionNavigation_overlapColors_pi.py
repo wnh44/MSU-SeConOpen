@@ -443,7 +443,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         masks.append(mask)
 
     # Pre combines first 2 masks assuming both are red
-    masks[0] = cv2.bitwise_or(mask[0], masks[1])
+    masks[0] = cv2.bitwise_or(masks[0], masks[1])
     del masks[1]
 
     # Combines all masks 
