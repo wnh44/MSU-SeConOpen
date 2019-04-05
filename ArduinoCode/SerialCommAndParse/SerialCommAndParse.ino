@@ -1,11 +1,19 @@
 #include <motorController.h>
 #include <AllSensors.h>
+// #include <Servo.h> 
 
 // Conveyorbelt and encoder setup
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 Adafruit_MotorShield conveyorMotorShield = Adafruit_MotorShield(0x60); //Sheild address
 Adafruit_DCMotor *conveyorMotor = conveyorMotorShield.getMotor(2); // DC motor on M2
+
+
+// Servo myservo1;  // create servo object to control a servo flag
+//Servo myservo2;
+int pos = 0;  //setting initial variables. Had a bug where these have to be declared below setup() (????)
+int c_pos = 0;
+
 
 bool motorRunning = false;
 bool stalled = false;
@@ -216,13 +224,24 @@ void startMotor(int speed)
     conveyorMotor->setSpeed( speed );
 }
 
-
-
-
-
-
-
-
+//void gotopos(int pos){
+//   if(c_pos < pos){
+//     //for loop to gradually change pos. For some reason, the servo fails to move when just given a large position.
+//     for(c_pos; c_pos < pos; c_pos++){ 
+//      myservo1.write(c_pos);              // tell servo to go to the new current position.
+////      myservo2.write(c_pos);
+//      delay(15);                       // waits 15ms for the servo to reach the position. This can be changed to change the rate of speed the servo moves. 
+//     } 
+//   }
+//   else{
+//        for(c_pos; c_pos > pos; c_pos--) // goes from 0 degrees to 180 degrees 
+//     {                                  // in steps of 1 degree 
+//      myservo1.write(c_pos);              // tell servo to go to position in variable 'pos' 
+////      myservo2.write(c_pos);
+//      delay(15);                       // waits 15ms for the servo to reach the position 
+//     }
+//   }
+//} 
 
 
 
@@ -245,7 +264,11 @@ void setup() {
   motors->turnLeft(twist, 100);
   delay(1);
   motors->stop();
-  
+
+//  myservo1.attach(9);  // attaches the servo on pin 9 to the servo object 
+//  myservo1.write(0);
+//  myservo2.attach(10);  // attaches the servo on pin 10 to the servo object 
+//  myservo2.write(0);
 }
 
 void loop() {

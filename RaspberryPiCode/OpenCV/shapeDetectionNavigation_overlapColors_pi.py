@@ -437,19 +437,20 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Gets mask for each color
     startT = time.time()
-    masks = []
+    masks = []                 # Maybe take two samples of each color, then combine them into one frame, some 4 frames but broader range of colors
     for color in colors:
         mask = cv2.inRange(hsv, color['lower'], color['upper'])
         masks.append(mask)
-    # print("Gets all masks", time.time()-startT)
+
+    # Pre combines first 2 masks assuming both are red
+    masks[0] = cv2.bitwise_or(mask[0], masks[1])
+    del masks[1]
 
     # Combines all masks 
     mask = masks[0]
-    startT = time.time()
     for i in range(len(masks)):
         if (i==0): continue
         mask = cv2.bitwise_or(mask, masks[i])
-    # print("Combines all masks", time.time()-startT)
 
     # If we are just getting balls
     if (not goHome):
@@ -505,11 +506,8 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
             framesWithoutCornerPost += 1
 
-
-
-    # cv2.imshow('hsv', hsv)
+    # Displays video feed
     cv2.imshow('frame', frame)
-    # cv2.imshow('mask', mask)
 
     # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
@@ -525,13 +523,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         chillThreshold = False
 
     navigate(objectSpecs, goHome, chillThreshold)
-
-    # print("Sends out commands center/left/right", time.time()-startT)
     
     startT = time.time()
     totalTime = time.time() - startTime
     fpsTimes.append(totalTime)
-    # outputVideo.write(frame)
     rawCapture.truncate(0)
 
     if (conveyorRunning == True and time.time() - conveyorTime > 9.5):
@@ -543,7 +538,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if sum(fpsTimes) >= 1:
         print("FPS:", len(fpsTimes))
         fpsTimes = []
-    # print("End stuff", time.time()-startT, "\nTotal frame time: ", totalTime, "\n")
+
     
 
 received = writeAndReadToSerial("GO stop@") 
