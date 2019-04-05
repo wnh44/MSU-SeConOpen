@@ -160,7 +160,7 @@ def identifyAndLabelAllShapes(mask, frame):
             cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
 
             # Calculates area of contour and saves if largest and block/circle
-            if (area > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*.4))):
+            if (area > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*0.4)):
                 largestArea = area
                 largestContour = contour
                 
