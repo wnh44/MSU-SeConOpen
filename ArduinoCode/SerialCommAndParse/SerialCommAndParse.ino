@@ -1,6 +1,6 @@
 #include <motorController.h>
 #include <AllSensors.h>
-// #include <Servo.h> 
+//#include <Servo.h> 
 
 // Conveyorbelt and encoder setup
 #include <Wire.h>
@@ -9,7 +9,7 @@ Adafruit_MotorShield conveyorMotorShield = Adafruit_MotorShield(0x60); //Sheild 
 Adafruit_DCMotor *conveyorMotor = conveyorMotorShield.getMotor(2); // DC motor on M2
 
 
-// Servo myservo1;  // create servo object to control a servo flag
+//Servo myservo1;  // create servo object to control a servo flag
 //Servo myservo2;
 int pos = 0;  //setting initial variables. Had a bug where these have to be declared below setup() (????)
 int c_pos = 0;
