@@ -440,7 +440,7 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
         received = writeAndReadToSerial("GO left " + spinSpeed + "@")
 
 
-
+# TRY: Checking each color mask individually. Make a duplicate of this file
 
 
 
