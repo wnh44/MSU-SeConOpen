@@ -147,6 +147,7 @@ def identifyAndLabelAllShapes(mask, frame):
             # Only uses object if below halfway
             # if (center[1] > frameHeight*.4):
             approxShape, aspectRatio = detectShape(contour)
+            # print("Got shape", approxShape)
             area = cv2.contourArea(contour)
             specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
@@ -163,11 +164,13 @@ def identifyAndLabelAllShapes(mask, frame):
             if (area > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*0.4)):
                 largestArea = area
                 largestContour = contour
+                largestShape = approxShape
                 
         except:
             None
 
-    return (largestContour, largestArea, approxShape)
+    # print("Largest shape: ", approxShape)
+    return (largestContour, largestArea, largestShape)
 
 # Detects the shape of the contour
 def detectShape(contour):
@@ -217,6 +220,7 @@ def detectShape(contour):
             print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
             shape = "Center Post"
         elif (w > 2*h or area < width*height/5):
+            # print("catch all line")
             shape = "Line"
         else:
             shape = "Circle"
@@ -475,9 +479,15 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         # print("Gets specs of Contour", time.time()-startT)
 
         # Outlines largest contour that is a shape or ball
-        if (largestContourAndAreaAndShape[1] != 0):
+        if (largestContourAndAreaAndShape[1] != 0 and largestContourAndAreaAndShape[2] != None):
+            print("Largest area/shape", largestContourAndAreaAndShape[1], largestContourAndAreaAndShape[2])
             cv2.drawContours(frame, [largestContourAndAreaAndShape[0]], -1, (0,0,0), 2)
     
+        #  Gets rid of shape if not identified some how
+        if (largestContourAndAreaAndShape[2] == None):
+            objectSpecs = None
+
+
     # If we want to go home, look are corner posts
     else:
         allVisibleCornerPosts = getCornerPosts(mask, frame)
