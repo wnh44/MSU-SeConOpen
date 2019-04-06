@@ -197,8 +197,8 @@ def detectShape(contour):
         aspectRatio = w / float(h)
 
         # a square will have an aspect ratio that is approximately
-        # equal to one, otherwise, the shape is a rectangle
-        if ((w > 2*h or aspectRatio > 5) and (area < 300)):
+        # equal to one, otherwise, the shape is a rectangle - had 'and (area < 300)'
+        if ((w > 2*h or aspectRatio > 5 or area < width*height/5):
             shape = "Line"
         elif aspectRatio < 0.4:
             shape = "Corner Post"
