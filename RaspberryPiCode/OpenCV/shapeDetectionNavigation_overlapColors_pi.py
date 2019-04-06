@@ -203,7 +203,8 @@ def detectShape(contour):
         elif aspectRatio < 0.4:
             shape = "Corner Post"
         # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
-        elif area > 5400 and center[0]+h/2 < frameHeight/2:
+        elif area > 5000 and center[1]-h/2 < frameHeight/2:
+            print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
             shape = "Center Post"
         elif aspectRatio > 0.40:    #Was 0.6
             shape = "Block"
@@ -212,7 +213,8 @@ def detectShape(contour):
     # otherwise, we assume the shape is a circle
     else:
         # if (center[0]+h/2 < frameHeight/2 or area > 10000):
-        if (area > 5400 and center[0]+h/2 < frameHeight/2):
+        if (area > 5000 and center[1]-h/2 < frameHeight/2):
+            print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
             shape = "Center Post"
         elif (w > 2*h and area < 300):
             shape = "Line"
