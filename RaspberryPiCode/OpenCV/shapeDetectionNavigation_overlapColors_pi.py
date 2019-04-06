@@ -46,7 +46,7 @@ conveyorTime = 0
 conveyorRunning = False
 
 # If true, it looks for corner posts and goes home
-goHome = False
+goHome = True
 cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
@@ -155,7 +155,7 @@ def identifyAndLabelAllShapes(mask, frame):
                 continue
 
             cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-            cv2.putText(frame, str(area)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
+            cv2.putText(frame, str(area)[:5], (int(specs["x"])), int(specs["y"]) - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
             # cv2.putText(frame, str(aspectRatio)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
 
@@ -241,6 +241,9 @@ def getCornerPosts(mask, frame):
     for contour in sortedContours[:8]:
         try:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
+            peri = cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
+            (x, y, w, h) = cv2.boundingRect(approx)
             M = cv2.moments(contour)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
             approxShape = None
@@ -266,6 +269,11 @@ def getCornerPosts(mask, frame):
 
                 # If area of object is less than amount, ignore it, probably an artifcat
                 if (area < 75):
+                    continue
+
+                # Ignores external objects entirely in the second half
+                if (center[1]+h/2 < frameHeight*0.5):
+                    # print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
                     continue
 
                 cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
