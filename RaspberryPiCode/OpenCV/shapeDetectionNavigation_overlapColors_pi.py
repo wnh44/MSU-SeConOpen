@@ -155,7 +155,7 @@ def identifyAndLabelAllShapes(mask, frame):
                 continue
 
             cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-            cv2.putText(frame, str(area)[:5], (int(specs["x"])), int(specs["y"]) - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
+            cv2.putText(frame, str(area)[:5], (int(specs["x"]), int(specs["y"]) - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
             # cv2.putText(frame, str(aspectRatio)[:5], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])+ 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
 
