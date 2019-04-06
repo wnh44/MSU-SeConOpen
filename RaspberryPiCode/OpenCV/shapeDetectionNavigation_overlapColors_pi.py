@@ -154,8 +154,8 @@ def identifyAndLabelAllShapes(mask, frame):
             specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
             # If area of object is less than amount, ignore it, probably an artifcat
-            # if (area < 75):
-            #     continue
+            if (area < 75):
+                continue
 
             cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             cv2.putText(frame, str(area)[:5], (int(specs["x"]), int(specs["y"]) - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
