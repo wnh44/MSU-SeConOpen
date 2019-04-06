@@ -51,6 +51,8 @@ cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
 
+ignoreYellow = True
+
 # Overall time
 overallTime = time.time()
 
@@ -122,9 +124,21 @@ def getObjectSpecs(largestContour):
     except:
         return None
 
+# Gets color of object
+def getColorOfObject(specs, masks, colorIndex):
+    mask = masks[colorIndex]    
 
+    if (specs == None):
+        return False
+
+    value = mask[specs["center"][1], specs["center"][0]]
+    if (value == 255):
+        return True
+    else:
+        return False
+    
 # Loops through all contours and labels/outlines the shapes
-def identifyAndLabelAllShapes(mask, frame):
+def identifyAndLabelAllShapes(mask, frame, masks):
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = cnts[0] if imutils.is_cv2() else cnts[1]
 
@@ -156,6 +170,12 @@ def identifyAndLabelAllShapes(mask, frame):
             # If area of object is less than amount, ignore it, probably an artifcat
             if (area < 75):
                 continue
+
+            # If true, ignore yellow blocks and circles
+            if ((approxShape == "Block" or approxShape == "Circle") and ignoreYellow):
+                if (getColorOfObject(specs, masks, 1)):
+                    continue
+
 
             cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             cv2.putText(frame, str(area)[:5], (int(specs["x"]), int(specs["y"]) - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
@@ -491,7 +511,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if (not goHome):
         startT = time.time()
         # Gives (contour, area)
-        largestContourAndAreaAndShape = identifyAndLabelAllShapes(mask, frame)
+        largestContourAndAreaAndShape = identifyAndLabelAllShapes(mask, frame, masks)
         # print("Gets largest Contour", time.time()-startT)
 
         startT = time.time()
