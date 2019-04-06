@@ -163,7 +163,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
             # Only uses object if below halfway
             # if (center[1] > frameHeight*.4):
             approxShape, aspectRatio = detectShape(contour)
-            print("Got shape", approxShape)
+            # print("Got shape", approxShape)
             area = cv2.contourArea(contour)
             specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
