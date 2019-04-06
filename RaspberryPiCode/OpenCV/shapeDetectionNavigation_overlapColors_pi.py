@@ -137,7 +137,6 @@ def identifyAndLabelAllShapes(mask, frame):
     sortedContours = sorted(contours, key=lambda x: cv2.contourArea(x))
     sortedContours.reverse()
 
-    print("Begin Frame...")
 
     # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
     for contour in sortedContours[:10]:
@@ -175,7 +174,6 @@ def identifyAndLabelAllShapes(mask, frame):
             None
 
     # print("Largest shape: ", approxShape)
-    print("End Frame...")
     return (largestContour, largestArea, largestShape)
 
 # Detects the shape of the contour
@@ -204,7 +202,6 @@ def detectShape(contour):
     # if the shape has 4 vertices, it is either a square or
     # a rectangle
     if len(approx) <= 4:
-        print("Begin Shape1")
 
         # compute the bounding box of the contour and use the
         # bounding box to compute the aspect ratio
@@ -213,32 +210,26 @@ def detectShape(contour):
             h = 0.0001
         aspectRatio = w / float(h)
 
-        print("Specs", area, w, h, center, frameHeight, frameWidth)
+        # print("Specs", area, w, h, center, frameHeight, frameWidth)
 
 
         # a square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle - had 'and (area < 300)'
         if (area < 300 and ((w > 2*h) or (aspectRatio > 5) or (area < w*h/5))):
             shape = "Line"
-            print("End Shape1 Line")
         elif (aspectRatio < 0.4):
             shape = "Corner Post"
-            print("End Shape1 Corner Post")
         # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
         elif (area > 5000 and center[1]-h/2 < frameHeight/2):
             # print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
             shape = "Center Post"
-            print("End Shape1 Center Post")
         elif (aspectRatio > 0.40):    #Was 0.6
             shape = "Block"
-            print("End Shape1 Block")
             if (w > frameWidth*.33):
                 shape = "Line"
-                print("End Shape1 Block->Line")
 
     # otherwise, we assume the shape is a circle
     else:
-        print("Begin Shape2")
         # if (center[0]+h/2 < frameHeight/2 or area > 10000):
         if (area > 5000 and center[1]-h/2 < frameHeight/2):
             # print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
@@ -249,7 +240,6 @@ def detectShape(contour):
             shape = "Circle"
             if (w > frameWidth*.33):
                 shape = "Line"
-        print("End Shape2")
         
 
 
