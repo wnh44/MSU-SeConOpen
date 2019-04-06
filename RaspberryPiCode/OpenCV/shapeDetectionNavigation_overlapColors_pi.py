@@ -131,13 +131,16 @@ def identifyAndLabelAllShapes(mask, frame):
     largestContour = None
     largestArea = 0
     approxShape = None
+    largestShape = None
 
     # Sorts contours by size
     sortedContours = sorted(contours, key=lambda x: cv2.contourArea(x))
     sortedContours.reverse()
 
+    print("Begin Frame...")
+
     # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
-    for contour in sortedContours[:8]:
+    for contour in sortedContours[:10]:
         try:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             M = cv2.moments(contour)
@@ -147,13 +150,13 @@ def identifyAndLabelAllShapes(mask, frame):
             # Only uses object if below halfway
             # if (center[1] > frameHeight*.4):
             approxShape, aspectRatio = detectShape(contour)
-            # print("Got shape", approxShape)
+            print("Got shape", approxShape)
             area = cv2.contourArea(contour)
             specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
             # If area of object is less than amount, ignore it, probably an artifcat
-            if (area < 75):
-                continue
+            # if (area < 75):
+            #     continue
 
             cv2.putText(frame, specs["shape"], (int(specs["x"])+ int(specs["radius"]), int(specs["y"])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
             cv2.putText(frame, str(area)[:5], (int(specs["x"]), int(specs["y"]) - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)                
@@ -161,21 +164,26 @@ def identifyAndLabelAllShapes(mask, frame):
             cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
 
             # Calculates area of contour and saves if largest and block/circle
-            if (area > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*0.4)):
+            if (area > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*0.5)):
                 largestArea = area
                 largestContour = contour
                 largestShape = approxShape
+
+            
                 
         except:
             None
 
     # print("Largest shape: ", approxShape)
+    print("End Frame...")
     return (largestContour, largestArea, largestShape)
 
 # Detects the shape of the contour
 def detectShape(contour):
     # Source: https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
     # initialize the shape name and approximate the contour
+    
+
     shape = "unidentified"
     peri = cv2.arcLength(contour, True)
     approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
@@ -187,6 +195,8 @@ def detectShape(contour):
     (x, y, w, h) = cv2.boundingRect(approx)
     area = cv2.contourArea(contour)
 
+
+
     # if the shape is a triangle, it will have 3 vertices
     # if len(approx) == 3:
     #     shape = "triangle"
@@ -194,36 +204,55 @@ def detectShape(contour):
     # if the shape has 4 vertices, it is either a square or
     # a rectangle
     if len(approx) <= 4:
+        print("Begin Shape1")
+
         # compute the bounding box of the contour and use the
         # bounding box to compute the aspect ratio
-        (x, y, w, h) = cv2.boundingRect(approx)
+        # (x, y, w, h) = cv2.boundingRect(approx)
+        if (h == 0):
+            h = 0.0001
         aspectRatio = w / float(h)
+
+        print("Specs", area, w, h, center, frameHeight, frameWidth)
+
 
         # a square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle - had 'and (area < 300)'
-        if area < 300 and (w > 2*h or aspectRatio > 5 or area < width*height/5):
+        if (area < 300 and ((w > 2*h) or (aspectRatio > 5) or (area < w*h/5))):
             shape = "Line"
-        elif aspectRatio < 0.4:
+            print("End Shape1 Line")
+        elif (aspectRatio < 0.4):
             shape = "Corner Post"
+            print("End Shape1 Corner Post")
         # elif aspectRatio >= 0.35 and aspectRatio <= 0.85 and center[0]+h/2 < frameHeight/2 or area > 10000:
-        elif area > 5000 and center[1]-h/2 < frameHeight/2:
-            print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
+        elif (area > 5000 and center[1]-h/2 < frameHeight/2):
+            # print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
             shape = "Center Post"
-        elif aspectRatio > 0.40:    #Was 0.6
+            print("End Shape1 Center Post")
+        elif (aspectRatio > 0.40):    #Was 0.6
             shape = "Block"
-
+            print("End Shape1 Block")
+            if (w > frameWidth*.33):
+                shape = "Line"
+                print("End Shape1 Block->Line")
 
     # otherwise, we assume the shape is a circle
     else:
+        print("Begin Shape2")
         # if (center[0]+h/2 < frameHeight/2 or area > 10000):
         if (area > 5000 and center[1]-h/2 < frameHeight/2):
-            print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
+            # print("Center y:", center[1], "Height:", h, "Frame Height:", frameHeight, "Center[1]-h/2:", center[1]-h/2)
             shape = "Center Post"
         elif (w > 2*h or area < width*height/5):
-            # print("catch all line")
             shape = "Line"
         else:
             shape = "Circle"
+            if (w > frameWidth*.33):
+                shape = "Line"
+        print("End Shape2")
+        
+
+
 
     # return the name of the shape
     return shape, aspectRatio
@@ -288,8 +317,9 @@ def getCornerPosts(mask, frame):
                 if (approxShape == "Corner Post"):
                     cornerPosts.append(specs)
                 
-        except:
-            None
+        except Exception as e: 
+            print("Error:" + str(e))
+            # print("Error: " + str(Exception))
 
     return cornerPosts
 
@@ -480,7 +510,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
         # Outlines largest contour that is a shape or ball
         if (largestContourAndAreaAndShape[1] != 0 and largestContourAndAreaAndShape[2] != None):
-            print("Largest area/shape", largestContourAndAreaAndShape[1], largestContourAndAreaAndShape[2])
+            # print("Largest area/shape", largestContourAndAreaAndShape[1], largestContourAndAreaAndShape[2])
             cv2.drawContours(frame, [largestContourAndAreaAndShape[0]], -1, (0,0,0), 2)
     
         #  Gets rid of shape if not identified some how
