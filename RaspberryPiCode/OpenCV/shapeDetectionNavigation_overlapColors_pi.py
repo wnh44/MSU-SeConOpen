@@ -187,6 +187,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
                 largestArea = area
                 largestContour = contour
                 largestShape = approxShape
+                print ("Replaced smaller area " + str(area) + " with larger area " + largestArea)
 
             
                 
