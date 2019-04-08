@@ -191,8 +191,8 @@ def identifyAndLabelAllShapes(mask, frame, masks):
 
             
                 
-        except:
-            None
+        except Exception as e: 
+            print("Error:" + str(e))
 
     # print("Largest shape: ", approxShape)
     return (largestContour, largestArea, largestShape)
