@@ -270,6 +270,7 @@ def detectShape(contour):
         else:
             shape = "Circle"
             if (w > frameWidth*.33):
+                print("Line greater than 1/3 the screen")
                 shape = "Line"
         
 
