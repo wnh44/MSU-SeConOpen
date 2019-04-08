@@ -561,6 +561,12 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     else:
         allVisibleCornerPosts = getCornerPosts(mask, frame)
         desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, colorIndexToLookFor)
+
+        if (colorIndexToLookFor != 0):
+            optimalDesiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, 0)
+            if optimalDesiredCornerPost != None:
+                desiredCornerPost = optimalDesiredCornerPost
+
         objectSpecs = desiredCornerPost
 
         # Adjust desired color based on time
