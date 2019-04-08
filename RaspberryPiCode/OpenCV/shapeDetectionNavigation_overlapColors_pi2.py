@@ -490,6 +490,10 @@ rawCapture = PiRGBArray(camera)
 time.sleep(1)
 fpsTimes = []
 
+# Makes sure flag is down
+received = writeAndReadToSerial("flag down@") 
+
+
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     startTime = time.time()
     frame = frame.array
@@ -636,8 +640,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         print("FPS:", len(fpsTimes))
         fpsTimes = []
 
-    
 
+
+
+received = writeAndReadToSerial("flag up@") 
 received = writeAndReadToSerial("GO stop@") 
 # Closes all windows opened
 # camera.release()
