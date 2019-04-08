@@ -304,6 +304,10 @@ def getCornerPosts(mask, frame):
             approx = cv2.approxPolyDP(contour, 0.04 * peri, True)
             (x, y, w, h) = cv2.boundingRect(approx)
             M = cv2.moments(contour)
+
+            if (int(M["m10"]) == 0 or int(M["m00"]) == 0 or int(M["m01"]) == 0):
+                    continue
+
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
             approxShape = None
             
