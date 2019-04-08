@@ -154,7 +154,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
 
 
     # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
-    for contour in sortedContours[:10]:
+    for contour in sortedContours:
         try:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             M = cv2.moments(contour)
