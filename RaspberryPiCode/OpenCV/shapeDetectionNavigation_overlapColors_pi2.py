@@ -277,7 +277,9 @@ def detectShape(contour):
                 # print("Line greater than 1/2 the screen")
                 shape = "Line"
         
-
+    # If a line is in bottom right corner, its probably a block
+    if (shape == "Line" and center[0] > frameWidth*0.8 and center[1] > frameHeight*0.8):
+        shape = "Block"
 
 
     # return the name of the shape
