@@ -278,7 +278,7 @@ def detectShape(contour):
                 shape = "Line"
         
     # If a line is in bottom right corner, its probably a block
-    if (shape == "Line" and center[0] > frameWidth*0.8 and center[1] > frameHeight*0.8):
+    if (shape == "Line" and center[1] > frameHeight*0.8 and area > 400):
         shape = "Block"
 
 
@@ -433,7 +433,7 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
         # Tells if object is left, right, or center of screen
         # If largest object is close to bottom of screen, collect
         # print("Y pos: " , objectSpecs["center"][1], "Frame height: " , frameHeight, "Frame height*0.8", frameHeight*0.8)
-        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2 and objectSpecs['center'][1] > frameHeight*0.9):
+        if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2 and objectSpecs['center'][1] > frameHeight*0.85):
             print("Attempting to collect...")
             received = writeAndReadToSerial("GO forward " + straightSpeed +"@")
             time.sleep(4)
