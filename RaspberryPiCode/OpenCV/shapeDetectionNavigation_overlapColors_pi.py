@@ -273,8 +273,8 @@ def detectShape(contour):
             print("Line w >2*h and area < w*h/5 and area: " + str(area) + " and w and h: " + str(w) + " " + str(h))
         else:
             shape = "Circle"
-            if (w > frameWidth*.33):
-                print("Line greater than 1/3 the screen")
+            if (w > frameWidth*.5):
+                print("Line greater than 1/2 the screen")
                 shape = "Line"
         
 
