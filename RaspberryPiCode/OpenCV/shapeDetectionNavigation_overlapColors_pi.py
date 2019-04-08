@@ -192,7 +192,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
                 largestArea = area
                 largestContour = contour
                 largestShape = approxShape
-                print ("Replaced smaller area " + str(area) + " with larger area " + str(largestArea))
+                # print ("Replaced smaller area " + str(area) + " with larger area " + str(largestArea))
 
             
                 
@@ -270,11 +270,11 @@ def detectShape(contour):
             shape = "Center Post"
         elif (w > 6*h or area < w*h/6):
             shape = "Line"
-            print("Line w >4*h and area < w*h/6 and area: " + str(area) + " and w and h: " + str(w) + " " + str(h))
+            # print("Line w >4*h and area < w*h/6 and area: " + str(area) + " and w and h: " + str(w) + " " + str(h))
         else:
             shape = "Circle"
             if (w > frameWidth*.5):
-                print("Line greater than 1/2 the screen")
+                # print("Line greater than 1/2 the screen")
                 shape = "Line"
         
 
