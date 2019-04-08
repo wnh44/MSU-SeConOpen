@@ -333,7 +333,7 @@ def getCornerPosts(mask, frame):
 
 
                 # If area of object is less than amount, ignore it, probably an artifcat
-                if (area < 75):
+                if (area < 50):
                     continue
 
                 # Ignores external objects entirely in the second half
