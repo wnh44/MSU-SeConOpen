@@ -121,7 +121,8 @@ def getObjectSpecs(largestContour):
         # approxShape = detectShape(largestContour)
         # print("Approx Shape: " + approxShape)
         return {"center" : center, "x" : x, "y" : y,"radius" : radius}
-    except:
+    except Exception as e: 
+        print("Error in getObjectSpecs:" + str(e))
         return None
 
 # Gets color of object
@@ -192,7 +193,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
             
                 
         except Exception as e: 
-            print("Error:" + str(e))
+            print("Error in identifyAndLabelAllShapes:" + str(e))
 
     # print("Largest shape: ", approxShape)
     print("End frame")
@@ -334,7 +335,7 @@ def getCornerPosts(mask, frame):
                     cornerPosts.append(specs)
                 
         except Exception as e: 
-            print("Error:" + str(e))
+            print("Error in getCornerPosts:" + str(e))
             # print("Error: " + str(Exception))
 
     return cornerPosts
