@@ -267,6 +267,7 @@ def detectShape(contour):
             shape = "Center Post"
         elif (w > 2*h or area < w*h/5):
             shape = "Line"
+            print("Line w >2*h and area < w*h/5 and area: " + str(area))
         else:
             shape = "Circle"
             if (w > frameWidth*.33):
