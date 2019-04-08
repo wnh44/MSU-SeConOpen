@@ -195,7 +195,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
             
                 
         except Exception as e: 
-            print("Error in identifyAndLabelAllShapes line " + str(sys.exc_info()[-1].tb_lineno) + ": + str(e) +)
+            print("Error in identifyAndLabelAllShapes line " + str(sys.exc_info()[-1].tb_lineno) + ":" + str(e))
 
     # print("Largest shape: ", approxShape)
     print("End frame")
