@@ -159,7 +159,9 @@ def identifyAndLabelAllShapes(mask, frame, masks):
         try:
             ((x, y), radius) = cv2.minEnclosingCircle(contour)
             M = cv2.moments(contour)
-            print(int(M["m10"]), int(M["m00"]), int(M["m01"]), int(M["m00"]))
+            if (int(M["m10"]) == 0 or int(M["m00"]) == 0 or int(M["m01"]) == 0):
+                continue
+            # print(int(M["m10"]), int(M["m00"]), int(M["m01"]), int(M["m00"]))
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
             approxShape = None
             
