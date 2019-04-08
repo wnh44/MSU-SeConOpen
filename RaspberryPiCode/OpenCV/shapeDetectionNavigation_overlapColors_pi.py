@@ -450,7 +450,7 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
                 print("Its on the right")
                 received = writeAndReadToSerial("GO right " + turnSpeed +"@") 
     else:
-        print("No object detected...spinning")
+        # print("No object detected...spinning")
         # received = writeAndReadToSerial("GO stop@") 
         currentPosition = "spinning"
         received = writeAndReadToSerial("GO left " + spinSpeed + "@")
@@ -513,9 +513,16 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         mask = cv2.inRange(hsv, color['lower'], color['upper'])
         masks.append(mask)
 
+    # Combines every two masks
+    newMasks = []
+    for i in range(0, len(masks), 2):
+        newMasks.append(cv2.bitwise_or(masks[i], masks[i+1]))
+
+    masks = newMasks
+
     # Pre combines first 2 masks assuming both are red
-    masks[0] = cv2.bitwise_or(masks[0], masks[1])
-    del masks[1]
+    # masks[0] = cv2.bitwise_or(masks[0], masks[1])
+    # del masks[1]
 
     # Combines all masks 
     mask = masks[0]
