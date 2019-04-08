@@ -489,7 +489,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     frame = frame.array
 
     # After 120 seconds, go home
-    if (time.time() - overallTime > 120):
+    if (time.time() - overallTime > 60):
         goHome = True
 
     
