@@ -23,6 +23,7 @@ import json
 import time
 import serial
 import RPi.GPIO as GPIO
+import sys
 
 from picamera.array import PiRGBArray
 from picamera import PiCamera
@@ -194,7 +195,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
             
                 
         except Exception as e: 
-            print("Error in identifyAndLabelAllShapes:" + str(e))
+            print("Error in identifyAndLabelAllShapes line " + str(sys.exc_info()[-1].tb_lineno) + ": + str(e) +)
 
     # print("Largest shape: ", approxShape)
     print("End frame")
