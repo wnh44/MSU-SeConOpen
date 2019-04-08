@@ -221,7 +221,7 @@ def detectShape(contour):
     area = cv2.contourArea(contour)
 
     if (area < 75):
-        continue
+        return "Line", 20
 
 
 
