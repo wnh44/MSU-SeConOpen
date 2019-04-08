@@ -220,6 +220,9 @@ def detectShape(contour):
     (x, y, w, h) = cv2.boundingRect(approx)
     area = cv2.contourArea(contour)
 
+    if (area < 75):
+        continue
+
 
 
     # if the shape is a triangle, it will have 3 vertices
@@ -267,7 +270,7 @@ def detectShape(contour):
             shape = "Center Post"
         elif (w > 2*h or area < w*h/5):
             shape = "Line"
-            print("Line w >2*h and area < w*h/5 and area: " + str(area))
+            print("Line w >2*h and area < w*h/5 and area: " + str(area) + " and w and h: " + str(w) + " " + str(h))
         else:
             shape = "Circle"
             if (w > frameWidth*.33):
