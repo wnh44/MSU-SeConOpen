@@ -187,7 +187,7 @@ def identifyAndLabelAllShapes(mask, frame, masks):
                 largestArea = area
                 largestContour = contour
                 largestShape = approxShape
-                print ("Replaced smaller area " + str(area) + " with larger area " + largestArea)
+                print ("Replaced smaller area " + str(area) + " with larger area " + str(largestArea))
 
             
                 
@@ -229,6 +229,10 @@ def detectShape(contour):
         # (x, y, w, h) = cv2.boundingRect(approx)
         if (h == 0):
             h = 0.0001
+
+        if (w == 0):
+            w = 0.0001
+
         aspectRatio = w / float(h)
 
         # print("Specs", area, w, h, center, frameHeight, frameWidth)
