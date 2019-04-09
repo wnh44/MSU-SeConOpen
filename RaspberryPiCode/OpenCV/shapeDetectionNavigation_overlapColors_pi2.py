@@ -47,7 +47,7 @@ conveyorTime = 0
 conveyorRunning = False
 
 # If true, it looks for corner posts and goes home
-goHome = True
+goHome = False
 cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
@@ -200,7 +200,7 @@ def identifyAndLabelAllShapes(masks, frame):
                 print("Error in identifyAndLabelAllShapes line " + str(sys.exc_info()[-1].tb_lineno) + ":" + str(e))
 
     # print("Largest shape: ", approxShape)
-    print("End frame")
+    print("Largest object has area: " + str(largestArea))
     return (largestContour, largestArea, largestShape)
 
 # Detects the shape of the contour
@@ -249,7 +249,7 @@ def detectShape(contour):
 
         # a square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle - had 'and (area < 300)'
-        if (area < 300 and ((w > 2*h) or (aspectRatio > 5) or (area < w*h/5))):
+        if (area < 300 and ((w > 2*h) or (aspectRatio > 5) or (area < w*h/5))) or (w*h/area > 1.3):
             shape = "Line"
         elif (aspectRatio < 0.4):
             shape = "Corner Post"
@@ -259,7 +259,10 @@ def detectShape(contour):
             shape = "Center Post"
         elif (aspectRatio > 0.40):    #Was 0.6
             shape = "Block"
-            if (w > frameWidth*.33):
+            print("w*h/area: " + str(w*h/area))
+            rect = cv2.minAreaRect(contour)
+            print("Angle: " + str(rect[2]))
+            if (w > frameWidth*.4):
                 shape = "Line"
 
     # otherwise, we assume the shape is a circle
@@ -278,8 +281,8 @@ def detectShape(contour):
                 shape = "Line"
         
     # If a line is in bottom right corner, its probably a block
-    if (shape == "Line" and center[1] > frameHeight*0.8 and area > 400):
-        shape = "Block"
+    # if (shape == "Line" and center[1] > frameHeight*0.8 and area > 400):
+    #     shape = "Block"
 
 
     # return the name of the shape
