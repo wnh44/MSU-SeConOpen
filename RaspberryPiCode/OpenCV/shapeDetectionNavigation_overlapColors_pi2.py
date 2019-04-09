@@ -606,6 +606,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
             framesWithoutCornerPost += 1
 
+            if (framesWithoutCornerPost%20 == 0):
+                print("FramesWithoutCornerPost = " + str(framesWithoutCornerPost))
+
     # Displays video feed
     cv2.imshow('frame', frame)
     cv2.imshow('mask', mask)
