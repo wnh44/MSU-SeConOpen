@@ -47,7 +47,7 @@ conveyorTime = 0
 conveyorRunning = False
 
 # If true, it looks for corner posts and goes home
-goHome = False
+goHome = True
 cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
