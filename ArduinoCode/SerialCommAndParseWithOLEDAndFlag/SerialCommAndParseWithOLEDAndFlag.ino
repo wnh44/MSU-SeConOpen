@@ -1,5 +1,6 @@
 #include <motorController.h>
 #include <AllSensors.h>
+#include <Servo.h> 
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -11,12 +12,22 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 
-Adafruit_MotorShield conveyorMotorShield = Adafruit_MotorShield(0x60); //Sheild address
-Adafruit_DCMotor *conveyorMotor = conveyorMotorShield.getMotor(2); // DC motor on M2
-
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+// Conveyorbelt and encoder setup
+#include <Wire.h>
+#include <Adafruit_MotorShield.h>
+Adafruit_MotorShield conveyorMotorShield = Adafruit_MotorShield(0x60); //Sheild address
+Adafruit_DCMotor *conveyorMotor = conveyorMotorShield.getMotor(2); // DC motor on M2
+
+
+Servo myservo1;  // create servo object to control a servo flag
+Servo myservo2;
+int pos = 0;  //setting initial variables. Had a bug where these have to be declared below setup() (????)
+int c_pos = 0;
+
 
 bool motorRunning = false;
 bool stalled = false;
@@ -101,6 +112,7 @@ void parseCommand(String command){
       String motor_speed_string = getXword(2, command, " ");
       int motor_speed = motor_speed_string.toInt();
       Serial.println("Going forward at speed " + motor_speed_string);
+      motors->goForward(motor_speed);
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
       display.setTextColor(WHITE);        // Draw white text
@@ -108,11 +120,11 @@ void parseCommand(String command){
       display.println("FORWARD SPEED " + motor_speed_string);
       display.display();
 //      delay(2000);
-      motors->goForward(motor_speed);
     }else if (secondWord == "backward") {
       String motor_speed_string = getXword(2, command, " ");
       int motor_speed = motor_speed_string.toInt();
       Serial.println("Going backward at speed " + motor_speed_string);
+      motors->goBackward(motor_speed);
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
       display.setTextColor(WHITE);        // Draw white text
@@ -120,9 +132,9 @@ void parseCommand(String command){
       display.println("BACKWARD SPEED " + motor_speed_string);
       display.display();
 //      delay(2000);
-      motors->goBackward(motor_speed);
     }else if (secondWord == "stop") {
       Serial.println("Stopping");
+      motors->stop();
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
       display.setTextColor(WHITE);        // Draw white text
@@ -130,11 +142,11 @@ void parseCommand(String command){
       display.println("STOPPING");
       display.display();
 //      delay(2000);
-      motors->stop();
     }else if (secondWord == "right") {
       String motor_speed_string = getXword(2, command, " ");
       int motor_speed = motor_speed_string.toInt();
       Serial.println("Going right at speed " + motor_speed_string);
+      motors->turnRight(twist, motor_speed);
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
       display.setTextColor(WHITE);        // Draw white text
@@ -142,11 +154,11 @@ void parseCommand(String command){
       display.println("RIGHT SPEED " + motor_speed_string);
       display.display();
 //      delay(2000);
-      motors->turnRight(twist, motor_speed);
     }else if (secondWord == "left") {
       String motor_speed_string = getXword(2, command, " ");
       int motor_speed = motor_speed_string.toInt();
       Serial.println("Going left at speed " + motor_speed_string);
+      motors->turnLeft(twist, motor_speed);
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
       display.setTextColor(WHITE);        // Draw white text
@@ -154,7 +166,6 @@ void parseCommand(String command){
       display.println("LEFT SPEED " + motor_speed_string);
       display.display();
 //      delay(2000);
-      motors->turnLeft(twist, motor_speed);
     }else {
       Serial.println("Incorrect GO command");
       display.clearDisplay();
@@ -189,6 +200,28 @@ void parseCommand(String command){
       display.display();
 //      delay(2000);
     }
+  } else if (firstWord == "flag"){
+    String secondWord = getXword(1, command, " ");
+
+    if (secondWord == "up"){
+      Serial.println("Sending up flag to 140 degrees");
+      gotopos(140);
+      display.clearDisplay();
+      display.setTextSize(1);             // Normal 1:1 pixel scale
+      display.setTextColor(WHITE);        // Draw white text
+      display.setCursor(0,0);             // Start at top-left corner
+      display.println("Sending flag up");
+      display.display();
+    } else if (secondWord == "down"){
+      Serial.println("Sending down flag to 70 degrees");
+      gotopos(70);
+      display.clearDisplay();
+      display.setTextSize(1);             // Normal 1:1 pixel scale
+      display.setTextColor(WHITE);        // Draw white text
+      display.setCursor(0,0);             // Start at top-left corner
+      display.println("Sending flag down");
+      display.display();
+    }
   }
   
   else{
@@ -205,59 +238,14 @@ void parseCommand(String command){
 }
 
 
-// Conveyor Motor and encoder setup ------------------------------------------
+// Conveyor Motor setup ------------------------------------------
 
-// Timer interupt
-// If encoder is not heard in timer span, release motor
-ISR(TIMER1_COMPA_vect)
-{
-    // Kill motor if stall timer has timed out while motor is running
-    if(motorRunning == true)
-    {
-        stalled = true;
-        // Serial.println("Stalled");
-    }
-}
-// Pin Interupt
-// Reset stallShutoff counter if encoder spike is found
-void stillSpinning()
-{
-    // Turn off interrupts
-    cli();
-    // Reset timer
-    TCNT1 = 0;
-    // Turn on interrupts
-    sei();
-}
-// Initialize timer and pin interrupts
-// Run in Setup()
-void setupInterrupts()
-{
-    // Turn off interrupts
-    cli();
-    
-    // Prep Timer interrupts
-    TCCR1A = 0;
-    TCCR1B = 0;
-    TCNT1 = 0;
-    // Set timeout time
-    OCR1A = 155 * stallDelay; //((16000000/1024) * 0.01 * stallDelay) -1;
-    TCCR1B |= (1 << WGM12);
-    TCCR1B |= (1 << CS12) | (1<< CS10);
-    TIMSK1 |= (1 << OCIE1A);
-    // Prep Pin interrupts for the encoder
-    pinMode(interruptPin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt( interruptPin ), stillSpinning, FALLING);
-    // Turn on interrupts
-    sei();
-}
 void releaseMotor()
 {
     // Serial.println("Stopping");
     stalled = false;
     motorRunning = false;
     // Ensure timers are on
-    sei();
     // Stop motor
     conveyorMotor->setSpeed(0);
     delay( pause );
@@ -277,26 +265,32 @@ void releaseMotor()
 void startMotor(int speed)
 {
     // Serial.println("Starting");
-    // Turn off interrupts
-    cli();
-    // Ensure stall timer is at 0
-    TCNT1 = 0;
     // Set stall flags
     motorRunning = true;
     stalled = false;
     // Start interupts again
-    sei();
     conveyorMotor->run(FORWARD);
     conveyorMotor->setSpeed( speed );
 }
 
-
-
-
-
-
-
-
+void gotopos(int pos){
+   if(c_pos < pos){
+     //for loop to gradually change pos. For some reason, the servo fails to move when just given a large position.
+     for(c_pos; c_pos < pos; c_pos++){ 
+      myservo1.write(c_pos);              // tell servo to go to the new current position.
+      myservo2.write(c_pos);
+      delay(15);                       // waits 15ms for the servo to reach the position. This can be changed to change the rate of speed the servo moves. 
+     } 
+   }
+   else{
+        for(c_pos; c_pos > pos; c_pos--) // goes from 0 degrees to 180 degrees 
+     {                                  // in steps of 1 degree 
+      myservo1.write(c_pos);              // tell servo to go to position in variable 'pos' 
+      myservo2.write(c_pos);
+      delay(15);                       // waits 15ms for the servo to reach the position 
+     }
+   }
+} 
 
 
 
@@ -320,7 +314,13 @@ void setup() {
   delay(1);
   motors->stop();
 
-    // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+  myservo1.attach(9);  // attaches the servo on pin 9 to the servo object 
+  myservo1.write(0);
+  myservo2.attach(10);  // attaches the servo on pin 10 to the servo object 
+  myservo2.write(0);
+
+
+  // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3C for 128x32
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
@@ -333,7 +333,6 @@ void setup() {
 
   // Clear the buffer
   display.clearDisplay();
-  
 }
 
 void loop() {
