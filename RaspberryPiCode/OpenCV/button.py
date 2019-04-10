@@ -7,7 +7,7 @@ def button_callback1(channel):
 
 def button_callback2(channel):
     print("Running Calibration.")
-    subprocess.call("python shapeDetectionAttempt_overlapColors_pi.py", shell=True)
+    subprocess.call("python colorCalibrationManual_pi.py", shell=True)
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
