@@ -58,8 +58,14 @@ centerPostIndex = None
 
 ignoreYellow = True
 
+# Number of color samples per mask
+colorSamplesPerMask = 2
+if (len(sys.argv) == 3):
+    colorSamplesPerMask = int(sys.argv[2])
+
 # Overall time
 overallTime = time.time()
+totalFrames = 0
 
 # Starts the camera feed, starts output feed
 camera = cv2.VideoCapture(0)
@@ -179,7 +185,7 @@ def identifyAndLabelAllShapes(masks, frame):
                 specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
                 if (approxShape == "Corner Post"):
-                    cornerPosts = specs
+                    cornerPost = specs
 
                 # If area of object is less than amount, ignore it, probably an artifcat
                 if (area < 75):
@@ -273,9 +279,9 @@ def detectShape(contour):
             shape = "Center Post"
         elif (aspectRatio > 0.40):    #Was 0.6
             shape = "Block"
-            print("w*h/area: " + str(w*h/area))
+            # print("w*h/area: " + str(w*h/area))
             rect = cv2.minAreaRect(contour)
-            print("Angle: " + str(rect[2]))
+            # print("Angle: " + str(rect[2]))
             if (w > frameWidth*.4):
                 shape = "Line"
 
@@ -553,6 +559,7 @@ received = writeAndReadToSerial("flag down@")
 
 
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+    totalFrames += 1
     startTime = time.time()
     frame = frame.array
 
@@ -583,9 +590,14 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # Combines every two masks
     newMasks = []
-    for i in range(0, len(masks), 2):
-        newMasks.append(cv2.bitwise_or(masks[i], masks[i+1]))
-
+    if (colorSamplesPerMask == 2):
+        for i in range(0, len(masks), 2):
+            newMasks.append(cv2.bitwise_or(masks[i], masks[i+1]))
+    if (colorSamplesPerMask == 3):
+        for i in range(0, len(masks), 3):
+            tempMask = cv2.bitwise_or(masks[i], masks[i+1])
+            # print("T1: " + str(tempMask.shape) + " T2: " + str(type(masks[i+2])))
+            newMasks.append(cv2.bitwise_or(tempMask, masks[i+2]))
     masks = newMasks
 
     # Pre combines first 2 masks assuming both are red
@@ -599,7 +611,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         mask = cv2.bitwise_or(mask, masks[i])
 
     # Gets index of corner post to re-arrange masks
-    if (firstFrame):
+    if (firstFrame and totalFrames > 20):
         centerPostIndex = getCenterPostColorIndex(masks)
         if centerPostIndex != None:
             masks = masks[centerPostIndex:] + masks[:centerPostIndex]
