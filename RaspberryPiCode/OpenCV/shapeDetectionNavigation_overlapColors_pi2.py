@@ -48,6 +48,8 @@ conveyorRunning = False
 
 # If true, it looks for corner posts and goes home
 goHome = False
+timeToGoHome = 120
+lastResortGetOutsideTimeLeft = 10
 cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
@@ -166,8 +168,8 @@ def identifyAndLabelAllShapes(masks, frame):
 
         cornerPost = None
 
-        # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
-        for contour in sortedContours:
+        # Loops through first 4 contours (largest ones, avoids small annoying artifacts)
+        for contour in sortedContours[:4]:
             try:
                 ((x, y), radius) = cv2.minEnclosingCircle(contour)
                 M = cv2.moments(contour)
@@ -525,7 +527,7 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
         # print("No object detected...spinning")
         # received = writeAndReadToSerial("GO stop@") 
         currentPosition = "spinning"
-        received = writeAndReadToSerial("GO left " + spinSpeed + "@")
+        received = writeAndReadToSerial("GO right " + spinSpeed + "@")
 
 
 
@@ -564,7 +566,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     frame = frame.array
 
     # After 120 seconds, go home
-    if (time.time() - overallTime > 60):
+    if (time.time() - overallTime > timeToGoHome):
         goHome = True
 
     
@@ -644,6 +646,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
     # If we want to go home, look are corner posts
     else:
+        
         allVisibleCornerPosts = getCornerPosts(mask, frame)
         desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, colorIndexToLookFor)
 
@@ -653,6 +656,18 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 desiredCornerPost = optimalDesiredCornerPost
 
         objectSpecs = desiredCornerPost
+
+        # If not outside yet with 10 seconds left, backup, turn arbitrarily, go forward
+        if (time.time() - overallTime > lastResortGetOutsideTimeLeft):
+            received = writeAndReadToSerial("GO backward 100@") 
+            time.sleep(3)
+            received = writeAndReadToSerial("GO right 100@") 
+            time.sleep(2)
+            received = writeAndReadToSerial("GO forward 100@") 
+            time.sleep(3)
+            received = writeAndReadToSerial("flag up@") 
+            break
+
 
         # Adjust desired color based on time
         if (objectSpecs != None):
