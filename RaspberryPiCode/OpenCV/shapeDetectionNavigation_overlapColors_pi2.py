@@ -59,11 +59,21 @@ firstFrame = True
 centerPostIndex = None
 
 ignoreYellow = True
+headless = False
 
 # Number of color samples per mask
 colorSamplesPerMask = 2
-if (len(sys.argv) == 3):
-    colorSamplesPerMask = int(sys.argv[2])
+if (len(sys.argv) > 2):
+    if (sys.argv[2] == "h"):
+        print("Is Headless")
+        headless = True
+        if (len(sys.argv) > 3):
+            print("Using 3 samples")
+            colorSamplesPerMask = int(sys.argv[3])
+    
+    if (sys.argv[2] == "3"):
+        print("Using 3 samples")
+        colorSamplesPerMask = int(sys.argv[2])
 
 # Overall time
 overallTime = time.time()
@@ -533,8 +543,9 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
 
 
 # Names the windows
-cv2.namedWindow("mask")
-cv2.namedWindow("frame")
+if (not headless):
+    cv2.namedWindow("mask")
+    cv2.namedWindow("frame")
 # cv2.namedWindow("hsv")
 # cv2.setMouseCallback("frame", updateColorRangeWhenClick)
 
@@ -706,8 +717,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
                 print("FramesWithoutCornerPost = " + str(framesWithoutCornerPost))
 
     # Displays video feed
-    cv2.imshow('frame', frame)
-    cv2.imshow('mask', mask)
+    if (not headless):
+        cv2.imshow('frame', frame)
+        cv2.imshow('mask', mask)
 
     # Closes when pressing 's'
     if cv2.waitKey(1) & 0xFF == ord('s'):
