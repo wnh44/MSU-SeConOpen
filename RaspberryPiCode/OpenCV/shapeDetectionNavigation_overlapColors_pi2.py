@@ -52,6 +52,10 @@ cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
 
+# For re-arranging masks
+firstFrame = True
+centerPostIndex = None
+
 ignoreYellow = True
 
 # Overall time
@@ -154,6 +158,8 @@ def identifyAndLabelAllShapes(masks, frame):
         sortedContours = sorted(contours, key=lambda x: cv2.contourArea(x))
         sortedContours.reverse()
 
+        cornerPost = None
+
         # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
         for contour in sortedContours:
             try:
@@ -172,6 +178,9 @@ def identifyAndLabelAllShapes(masks, frame):
                 area = cv2.contourArea(contour)
                 specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
 
+                if (approxShape == "Corner Post"):
+                    cornerPosts = specs
+
                 # If area of object is less than amount, ignore it, probably an artifcat
                 if (area < 75):
                     continue
@@ -189,6 +198,11 @@ def identifyAndLabelAllShapes(masks, frame):
 
                 # Calculates area of contour and saves if largest and block/circle
                 if (area > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*0.5)):
+                    # If 'ball' overlaps a corner post, its not a ball
+                    if (approxShape == "Circle" and cornerPost != None and abs(center[0]-cornerPost["center"][0]) < frameWidth*0.1):
+                        print("Stopped thing against corner post")
+                        continue
+
                     largestArea = area
                     largestContour = contour
                     largestShape = approxShape
@@ -384,6 +398,49 @@ def getSpecificCornerPost(cornerPostsSpecs, masks, colorIndex):
     
     return desiredCornerPostSpecs
 
+# Gets index of centerPost seen
+def getCenterPostColorIndex(masks):
+    centerPost = None
+    maskNumber = 0
+    for mask in masks:
+        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = cnts[0] if imutils.is_cv2() else cnts[1]
+
+        # Sorts contours by size
+        sortedContours = sorted(contours, key=lambda x: cv2.contourArea(x))
+        sortedContours.reverse()
+
+        # Loops through first 8 contours (largest ones, avoids small annoying artifacts)
+        for contour in sortedContours:
+            try:
+                ((x, y), radius) = cv2.minEnclosingCircle(contour)
+                M = cv2.moments(contour)
+                if (int(M["m10"]) == 0 or int(M["m00"]) == 0 or int(M["m01"]) == 0):
+                    continue
+                # print(int(M["m10"]), int(M["m00"]), int(M["m01"]), int(M["m00"]))
+                center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                approxShape = None
+                
+                # Only uses object if below halfway
+                # if (center[1] > frameHeight*.4):
+                approxShape, aspectRatio = detectShape(contour)
+                # print("Got shape", approxShape)
+                area = cv2.contourArea(contour)
+                specs = {"center" : center, "x" : x, "y" : y,"radius" : radius, "shape" : approxShape}
+
+                if (approxShape == "Center Post"):
+                    centerPost = specs
+                    for i in range(len(masks)):
+                        if np.array_equal(masks[i], mask):
+                            maskNumber = i
+                    
+
+            except Exception as e: 
+                print("Error in getCenterPostIndex line " + str(sys.exc_info()[-1].tb_lineno) + ":" + str(e))
+                continue
+
+    
+    return maskNumber
 
 # Reads from serial, returns the text
 def readFromSerial():
@@ -465,8 +522,6 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
         received = writeAndReadToSerial("GO left " + spinSpeed + "@")
 
 
-# TRY: Checking each color mask individually. Make a duplicate of this file
-
 
 
 # Names the windows
@@ -542,6 +597,17 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     for i in range(len(masks)):
         if (i==0): continue
         mask = cv2.bitwise_or(mask, masks[i])
+
+    # Gets index of corner post to re-arrange masks
+    if (firstFrame):
+        centerPostIndex = getCenterPostColorIndex(masks)
+        if centerPostIndex != None:
+            masks = masks[centerPostIndex:] + masks[:centerPostIndex]
+            firstFrame = False
+            print("Center post is index number " + str(centerPostIndex))
+    else: 
+        masks = masks[centerPostIndex:] + masks[:centerPostIndex]
+
 
     # If we are just getting balls
     if (not goHome):
