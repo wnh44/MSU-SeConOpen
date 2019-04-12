@@ -180,7 +180,7 @@ void parseCommand(String command){
     String secondWord = getXword(1, command, " ");
 
     if (secondWord == "start") {
-      startMotor(200);
+      startMotor(255);
       Serial.println("Starting conveyor motor");
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
