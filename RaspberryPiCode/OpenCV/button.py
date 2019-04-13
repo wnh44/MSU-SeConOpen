@@ -3,7 +3,7 @@ import subprocess
 
 def button_callback1(channel):
     print("Running Main.")
-    subprocess.call("python shapeDetectionNavigation_overlapColors_pi2.py 0 h", shell=True)
+    subprocess.call("python shapeDetectionNavigation_overlapColors_pi2.py 0 h 3", shell=True)
 
 def button_callback2(channel):
     print("Running Calibration.")

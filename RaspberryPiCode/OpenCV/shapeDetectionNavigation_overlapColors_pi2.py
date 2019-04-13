@@ -15,6 +15,13 @@
 # If object goes over midpoint and has 4 verts, it must be center or corner post *******
 
 
+
+# When it attempted to collect, it never stopped
+# Fix color detection of yellow when offset
+
+
+
+
 import cv2
 import numpy as np
 import imutils
@@ -45,14 +52,24 @@ frameHeight = 300
 # Keeps track of time conveyor has been running
 conveyorTime = 0
 conveyorRunning = False
+conveyorForward = False
 
 # If true, it looks for corner posts and goes home
 goHome = False
 timeToGoHome = 120
-lastResortGetOutsideTimeLeft = 10
+lastResortGetOutsideTimeLeft = 170
 cornerPostSearchTimer = 0
 colorIndexToLookFor = 0
 framesWithoutCornerPost = 0
+currentLookingColor = 0
+findAnyCornerPost = False
+checkForHomeFlag = False
+checkForHomeCounter = 0
+
+# Timers
+forwardTimer = 0
+TurnTimer = 0
+
 
 # For re-arranging masks
 firstFrame = True
@@ -84,7 +101,7 @@ camera = cv2.VideoCapture(0)
 # outputVideo = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('D','I','V','X'), 20.0, (int(camera.get(3)),int(camera.get(4))))
 
 # Gets base color from command line, else uses hardcoded
-if (len(sys.argv) == 4):
+if (len(sys.argv) == 10):
     baseColor = (int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]))
 else:
     baseColor = (67, 125, 90)
@@ -215,7 +232,7 @@ def identifyAndLabelAllShapes(masks, frame):
                 cv2.drawContours(frame, [contour], -1, (255,255,255), 2)
 
                 # Calculates area of contour and saves if largest and block/circle
-                if (area > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*0.5)):
+                if (area*0.97 > largestArea and (approxShape == "Block" or approxShape == "Circle") and (center[1] > frameHeight*0.5)):
                     # If 'ball' overlaps a corner post, its not a ball
                     if (approxShape == "Circle" and cornerPost != None and abs(center[0]-cornerPost["center"][0]) < frameWidth*0.1):
                         print("Stopped thing against corner post")
@@ -281,7 +298,7 @@ def detectShape(contour):
 
         # a square will have an aspect ratio that is approximately
         # equal to one, otherwise, the shape is a rectangle - had 'and (area < 300)'
-        if (area < 300 and ((w > 2*h) or (aspectRatio > 5) or (area < w*h/5))) or (w*h/area > 1.3):
+        if (area < 300 and ((w > 2*h) or (aspectRatio > 6) or (area < w*h/5))) or (w*h/area > 1.3):
             shape = "Line"
         elif (aspectRatio < 0.4):
             shape = "Corner Post"
@@ -322,6 +339,7 @@ def detectShape(contour):
 
 # Gets corner post
 def getCornerPosts(mask, frame):
+    global checkForHomeFlag, checkForHomeCounter
     # Gets and sorts contours
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     contours = cnts[0] if imutils.is_cv2() else cnts[1]
@@ -357,6 +375,8 @@ def getCornerPosts(mask, frame):
                 # If object is over 2/3 of screen height, you've found it
                 if (specs['radius']*2 > frameHeight*2/3 and specs['center'][0] > 100 and specs['center'][0] < 200):
                     specs['arrived'] = True
+                    checkForHomeFlag = False
+                    checkForHomeCounter = 0
                 else:
                     specs['arrived'] = False
 
@@ -490,7 +510,7 @@ def writeAndReadToSerial(dataToSend):
 
 # Navigates the robot
 def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
-    global currentPosition
+    global currentPosition, conveyorRunning, conveyorForward, conveyorTime, forwardTimer, turnTimer, checkForHomeFlag, checkForHomeCounter
     if (not goHome):
         straightSpeed = "70"
         turnSpeed = "20"
@@ -502,37 +522,70 @@ def navigate(objectSpecs, goHome=False, chillSideThreshold = False):
 
     # Side threshold, less picky for navigating to secondary corner posts
     if (chillSideThreshold):
-        sideThreshold = 1.1
+        sideThreshold = 1.3
     else:
         sideThreshold = 0.75
 
     # Navigates
     if (objectSpecs != None):
+        # Goes forward if haven't in awhile
+        if (time.time() - forwardTimer > 10 and not goHome):
+            received = writeAndReadToSerial("GO forward 60@")
+            time.sleep(1)
+            # received = writeAndReadToSerial("GO stop@")
+            print("It did a stop here")
+            forwardTimer = time.time()
+
+        # If its been turning in one direction for awhile
+        if (time.time() - forwardTimer > 10 and not goHome):
+            received = writeAndReadToSerial("GO backward 60@")
+            time.sleep(1.5)
+            # received = writeAndReadToSerial("GO stop@")
+            print("It did a stop here")
+            forwardTimer = time.time()
+        
+
+
         # Tells if object is left, right, or center of screen
         # If largest object is close to bottom of screen, collect
         # print("Y pos: " , objectSpecs["center"][1], "Frame height: " , frameHeight, "Frame height*0.8", frameHeight*0.8)
         if ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2 and objectSpecs['center'][1] > frameHeight*0.85):
+            if (conveyorRunning):
+                # received = writeAndReadToSerial("GO stop " + "@")
+                print("Saw object while convyeor is running. Stopping for a moment...")
+                # return
+
             print("Attempting to collect...")
             received = writeAndReadToSerial("GO forward " + straightSpeed +"@")
             time.sleep(4)
-            received = writeAndReadToSerial("conveyor start@")
+            received = writeAndReadToSerial("conveyor forward@")
+            print ("Conveyor going forward")
             conveyorTime = time.time()
             conveyorRunning = True
+            conveyorForward = True
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"]*sideThreshold)) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"]*sideThreshold)) >= frameWidth/2):
             if (currentPosition != "center"):
                 currentPosition = "center"
                 print("Its in the center")
                 received = writeAndReadToSerial("GO forward " + straightSpeed +"@")
+                if (goHome and not checkForHomeFlag):
+                    checkForHomeFlag = True
+                    checkForHomeCounter = 10
+                    # time.sleep(1.5)
+                forwardTimer = time.time()
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) <= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) <= frameWidth/2):
             if (currentPosition != "left"):
                 currentPosition = "left"
                 print("Its on the left")
                 received = writeAndReadToSerial("GO left " + turnSpeed + "@")
+                turnTimer = time.time()
         elif ((int(objectSpecs["x"]) - int(objectSpecs["radius"])) >= frameWidth/2 and (int(objectSpecs["x"]) + int(objectSpecs["radius"])) >= frameWidth/2):
             if (currentPosition != "right"):
                 currentPosition = "right"
                 print("Its on the right")
                 received = writeAndReadToSerial("GO right " + turnSpeed +"@") 
+                turnTimer = time.time()
+                
     else:
         # print("No object detected...spinning")
         # received = writeAndReadToSerial("GO stop@") 
@@ -568,7 +621,13 @@ time.sleep(1)
 fpsTimes = []
 
 # Makes sure flag is down
-received = writeAndReadToSerial("flag down@") 
+# received = writeAndReadToSerial("flag down@") 
+received = writeAndReadToSerial("GO right 50@")
+time.sleep(1.7)
+received = writeAndReadToSerial("GO forward 100@")
+time.sleep(1)
+received = writeAndReadToSerial("GO stop@")
+
 
 
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
@@ -627,11 +686,13 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     if (firstFrame and totalFrames > 20):
         centerPostIndex = getCenterPostColorIndex(masks)
         if centerPostIndex != None:
-            masks = masks[centerPostIndex:] + masks[:centerPostIndex]
+            colorIndexToLookFor = centerPostIndex
+            currentLookingColor = centerPostIndex
+            # masks = masks[centerPostIndex:] + masks[:centerPostIndex]
             firstFrame = False
             print("Center post is index number " + str(centerPostIndex))
-    else: 
-        masks = masks[centerPostIndex:] + masks[:centerPostIndex]
+    # else: 
+    #     masks = masks[centerPostIndex:] + masks[:centerPostIndex]
 
 
     # If we are just getting balls
@@ -659,58 +720,70 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     else:
         
         allVisibleCornerPosts = getCornerPosts(mask, frame)
-        desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, colorIndexToLookFor)
+        if (not findAnyCornerPost):
+            desiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, colorIndexToLookFor)
+        elif (allVisibleCornerPosts != []):
+            desiredCornerPost = allVisibleCornerPosts[0]
+        else:
+            desiredCornerPost = None
 
-        if (colorIndexToLookFor != 0):
-            optimalDesiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, 0)
+        if (time.time() - overallTime  > 160):
+            if (len(allVisibleCornerPosts)>0):
+                desiredCornerPost = allVisibleCornerPosts[0]
+
+
+        if (currentLookingColor != colorIndexToLookFor):
+            optimalDesiredCornerPost = getSpecificCornerPost(allVisibleCornerPosts, masks, colorIndexToLookFor)
             if optimalDesiredCornerPost != None:
                 desiredCornerPost = optimalDesiredCornerPost
 
         objectSpecs = desiredCornerPost
 
         # If not outside yet with 10 seconds left, backup, turn arbitrarily, go forward
-        if (time.time() - overallTime > lastResortGetOutsideTimeLeft):
+        if (time.time() - overallTime  > lastResortGetOutsideTimeLeft):
             received = writeAndReadToSerial("GO backward 100@") 
-            time.sleep(3)
+            time.sleep(2)
             received = writeAndReadToSerial("GO right 100@") 
             time.sleep(2)
             received = writeAndReadToSerial("GO forward 100@") 
-            time.sleep(3)
+            time.sleep(5)
             received = writeAndReadToSerial("flag up@") 
             break
 
 
         # Adjust desired color based on time
         if (objectSpecs != None):
-            if (colorIndexToLookFor == 0 and objectSpecs['arrived'] == True):
+            if (currentLookingColor == colorIndexToLookFor and objectSpecs['arrived'] == True):
                 print("FINAL PUSH HOME!")
                 received = writeAndReadToSerial("GO forward 100@")
                 time.sleep(4)
                 print("You have reached your destination")
                 break
-            elif (colorIndexToLookFor != 0 and objectSpecs['closeEnough'] == True):
+            elif (currentLookingColor != colorIndexToLookFor and objectSpecs['closeEnough'] == True):
                 print ("CORNER POST IS CLOSE ENOUGH, LOOKING FOR PRIMARY ONE NOW")
-                colorIndexToLookFor -= 1 # Look for next obj
+                currentLookingColor = colorIndexToLookFor # Look for next obj
                 # cornerPostSearchTimer = colorIndexToLookFor*10 # Decrease 10 seconds from total timer
-                framesWithoutCornerPost = 0 #This will also resest colorIndex to look for
+                # framesWithoutCornerPost = 0 #This will also resest colorIndex to look for
 
             print("Found corner post")
         # Checks timer
         else:
             # Change this to frames??????
             # if (cornerPostSearchTimer == 0):
-            if (framesWithoutCornerPost == 0):
+            if (framesWithoutCornerPost > 150):
+                findAnyCornerPost = True
+            elif (framesWithoutCornerPost == 0):
                 # cornerPostSearchTimer = time.time()
-                colorIndexToLookFor = 0
-                print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
+                currentLookingColor = 0
+                print("LOOKING FOR MASK NUMBER", currentLookingColor)
             # elif (time.time() - cornerPostSearchTimer > 30):
             elif (framesWithoutCornerPost > 280):
-                colorIndexToLookFor = 2
-                print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
+                currentLookingColor = 2
+                print("LOOKING FOR MASK NUMBER", currentLookingColor)
             # elif (time.time() - cornerPostSearchTimer > 20):
             elif (framesWithoutCornerPost > 100):
-                colorIndexToLookFor = 1
-                print("LOOKING FOR MASK NUMBER", colorIndexToLookFor)
+                currentLookingColor = 1
+                print("LOOKING FOR MASK NUMBER", currentLookingColor)
             framesWithoutCornerPost += 1
 
             if (framesWithoutCornerPost%20 == 0):
@@ -734,15 +807,29 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     else:
         chillThreshold = False
 
-    navigate(objectSpecs, goHome, chillThreshold)
+
+    if (not checkForHomeFlag):
+        navigate(objectSpecs, goHome, chillThreshold)
+    else:
+        checkForHomeCounter -= 1
+        if (checkForHomeCounter < 1):
+            checkForHomeFlag = False
+            checkForHomeCounter = 0
+
     
     startT = time.time()
     totalTime = time.time() - startTime
     fpsTimes.append(totalTime)
     rawCapture.truncate(0)
 
-    if (conveyorRunning == True and time.time() - conveyorTime > 9.5):
+    if (conveyorRunning == True and conveyorForward and time.time() - conveyorTime > 4.95):
+        received = writeAndReadToSerial("conveyor backward@")
+        print ("Conveyor going backward")
+        conveyorForward = False
+
+    if (conveyorRunning == True and not conveyorForward and time.time() - conveyorTime > 10.65):
         received = writeAndReadToSerial("conveyor stop@")
+        print ("Conveyor stopping")
         conveyorTime = 0
         conveyorRunning = False
 
@@ -753,7 +840,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 
 
 
-
+received = writeAndReadToSerial("conveyor stop@")
 received = writeAndReadToSerial("flag up@") 
 received = writeAndReadToSerial("GO stop@") 
 # Closes all windows opened

@@ -154,11 +154,35 @@ void parseCommand(String command){
       display.println("RIGHT SPEED " + motor_speed_string);
       display.display();
 //      delay(2000);
+    }else if (secondWord == "rightT") {
+      String motor_speed_string = getXword(2, command, " ");
+      int motor_speed = motor_speed_string.toInt();
+      Serial.println("Going right at speed " + motor_speed_string);
+      motors->turnRight(forward, motor_speed);
+      display.clearDisplay();
+      display.setTextSize(1);             // Normal 1:1 pixel scale
+      display.setTextColor(WHITE);        // Draw white text
+      display.setCursor(0,0);             // Start at top-left corner
+      display.println("RIGHT SPEED " + motor_speed_string);
+      display.display();
+//      delay(2000);
     }else if (secondWord == "left") {
       String motor_speed_string = getXword(2, command, " ");
       int motor_speed = motor_speed_string.toInt();
       Serial.println("Going left at speed " + motor_speed_string);
       motors->turnLeft(twist, motor_speed);
+      display.clearDisplay();
+      display.setTextSize(1);             // Normal 1:1 pixel scale
+      display.setTextColor(WHITE);        // Draw white text
+      display.setCursor(0,0);             // Start at top-left corner
+      display.println("LEFT SPEED " + motor_speed_string);
+      display.display();
+//      delay(2000);
+    }else if (secondWord == "leftT") {
+      String motor_speed_string = getXword(2, command, " ");
+      int motor_speed = motor_speed_string.toInt();
+      Serial.println("Going left at speed " + motor_speed_string);
+      motors->turnLeft(forward, motor_speed);
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
       display.setTextColor(WHITE);        // Draw white text
@@ -179,14 +203,14 @@ void parseCommand(String command){
   } else if (firstWord == "conveyor"){
     String secondWord = getXword(1, command, " ");
 
-    if (secondWord == "start") {
-      startMotor(255);
-      Serial.println("Starting conveyor motor");
+    if (secondWord == "forward") {
+      startMotorForward(255);
+      Serial.println("Starting conveyor forward motor");
       display.clearDisplay();
       display.setTextSize(1);             // Normal 1:1 pixel scale
       display.setTextColor(WHITE);        // Draw white text
       display.setCursor(0,0);             // Start at top-left corner
-      display.println("CONVEYOR MOTOR START");
+      display.println("CONVEYOR MOTOR FORWARD");
       display.display();
 //      delay(2000);
     } else if (secondWord == "stop"){
@@ -199,6 +223,24 @@ void parseCommand(String command){
       display.println("CONVEYOR MOTOR STOP");
       display.display();
 //      delay(2000);
+    } else if (secondWord == "backward"){
+      startMotorBackward(255);
+      Serial.println("Starting conveyor backward motor");
+      display.clearDisplay();
+      display.setTextSize(1);             // Normal 1:1 pixel scale
+      display.setTextColor(WHITE);        // Draw white text
+      display.setCursor(0,0);             // Start at top-left corner
+      display.println("CONVEYOR MOTOR BACKWARD");
+      display.display();
+//      delay(2000);
+    } else {
+      Serial.println("Parsed: " + getXword(1, command, " "));
+      display.clearDisplay();
+      display.setTextSize(1);             // Normal 1:1 pixel scale
+      display.setTextColor(WHITE);        // Draw white text
+      display.setCursor(0,0);             // Start at top-left corner
+      display.println("Parsed: " + getXword(1, command, " "));
+      display.display();
     }
   } else if (firstWord == "flag"){
     String secondWord = getXword(1, command, " ");
@@ -251,18 +293,18 @@ void releaseMotor()
     delay( pause );
     
     // Run backwards
-    conveyorMotor->run(BACKWARD);
-    conveyorMotor->setSpeed(255);
-    // Let run for some time
-    for (int i = 0; i < 5; i++)
-      delay( pause );
-    // Stop motor
-    conveyorMotor-> setSpeed(0);
-    conveyorMotor->run(RELEASE);
+//    conveyorMotor->run(BACKWARD);
+//    conveyorMotor->setSpeed(255);
+//    // Let run for some time
+//    for (int i = 0; i < 5; i++)
+//      delay( pause );
+//    // Stop motor
+//    conveyorMotor-> setSpeed(0);
+//    conveyorMotor->run(RELEASE);
     // Clear stall flags
     
 }
-void startMotor(int speed)
+void startMotorForward(int speed)
 {
     // Serial.println("Starting");
     // Set stall flags
@@ -272,6 +314,18 @@ void startMotor(int speed)
     conveyorMotor->run(FORWARD);
     conveyorMotor->setSpeed( speed );
 }
+
+void startMotorBackward(int speed)
+{
+    // Serial.println("Starting");
+    // Set stall flags
+    motorRunning = true;
+    stalled = false;
+    // Start interupts again
+    conveyorMotor->run(BACKWARD);
+    conveyorMotor->setSpeed( speed );
+}
+
 
 void gotopos(int pos){
    if(c_pos < pos){
